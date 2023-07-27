@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 import uvicorn
 import mysql.connector
 from datetime import datetime
+from ..client-side import api
 
 #start /home/bokajnevs/.local/bin/uvicorn webb_api:app --reload
 
@@ -112,11 +113,56 @@ async def root(category: str, start_date_time: str, end_date_time: str):
 
     return result
 
-@app.get("/Insert/{category}/{time}/{value}")
+@app.post("/{category}/InsertTest/")
 async def root(category: str, time: str, value: str):
 
     if(not category in categories):
-        return {"Invalid category"}  
+        return {"Invalid category"}
+    
+    format = "%Y-%m-%dT%H:%M:%S"
+
+    if(not is_valid_date_time(time)):
+        return "Invalid Date Time"
+
+    try:
+        float(value)
+    except ValueError:
+        return "Invalid Value"
+
+    mydb = connect_to_database()
+
+    mycursor = mydb.cursor()
+
+    time = time.replace("T", " ")
+
+    sql_command = sql_formula_get_specific_date_time % (category, time)
+    #return sql_command
+    mycursor.execute(sql_command)
+    result = mycursor.fetchall()
+
+    if(len(result) != 0):
+        return "Time already documented"
+
+    sql_command = sql_formula_insert % (category, time, value)
+
+    #return sql_command
+
+    mycursor.execute(sql_command)
+    mydb.commit()
+
+    return sql_command
+
+    #mycursor.execute(sql_formula, example_temp)
+
+    #result = mycursor.fetchone()
+
+    #return {"Date": result[0], "Temperature": result[1]}
+
+@app.post("/{category}/Insert/time={time}/value={value}")
+async def root(category: str, time: str, value: str):
+
+    if(not category in categories):
+        return {"Invalid category"}
     
     format = "%Y-%m-%dT%H:%M:%S"
 

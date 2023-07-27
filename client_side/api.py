@@ -1,4 +1,9 @@
 import requests
+import datetime
+
+class data_packet:
+    date_time: datetime.datetime
+    value: float
 
 class data_fetcher:
     class datatype:
