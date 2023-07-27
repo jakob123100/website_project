@@ -2,6 +2,6 @@
 
 echo "Starting webserver"
 
-cd /home/bokajnevs/programming/website/website_project/server_side
+cd /home/bokajnevs/programming/website/website_project
 
-uvicorn rest_api:app --host 192.168.0.127 --reload
+uvicorn server_side.rest_api:app --host 192.168.0.127 --reload

@@ -10,9 +10,9 @@ class data_fetcher:
         temperature: int = 0
 
     __api_url = "http://213.67.132.100:80/"
-    __is_connected_api_path = "IsConnected/"
-    __temperature_api_path = "Temperature/"
-    __get_latest_api_path = "GetLatest/"
+    __is_connected_api_path = "IsConnected"
+    __temperature_api_path = "Temperature"
+    __get_latest_api_path = "GetLatest"
 
     def __init__(self) -> None:
         pass
@@ -21,6 +21,16 @@ class data_fetcher:
         try:
             #print(self.__api_url + path)
             response = requests.get(self.__api_url + path)
+        except requests.exceptions.InvalidURL:
+            print("Could not connect to api url")
+            return None
+
+        return response.json()
+    
+    def __post_json_data(self, path, json_data: dict):
+        try:
+            print(self.__api_url + path)
+            response = requests.post(self.__api_url + path, json=json_data)
         except requests.exceptions.InvalidURL:
             print("Could not connect to api url")
             return None
@@ -44,10 +54,21 @@ class data_fetcher:
         category = self.__get_category_string(datatype)
         temperature_data: dict = self.__request_json_data(f"{category}{self.__get_latest_api_path}")
         return temperature_data
+    
+    def test_instet(self, datatype, data_packet: dict):
+        category = self.__get_category_string(datatype)
+        response = self.__post_json_data(f"{category}/InsertTest/", data_packet)
+        return response
 
     
-#df = data_fetcher()
+df = data_fetcher()
+dt = datetime.datetime.strptime("2023/07/27T16:30:22", "%Y/%m/%d %H:%M:%S")
+print(dt)
+dp = {"date_time": str(dt), "value": 24}
 
-#print(df.is_connencted())
+#dp.date_time = datetime.time
+#dp.value = 24
+
+print(df.test_instet(df.datatype.temperature, dp))
 #last_temp_data = df.get_latest(df.datatype.temperature)
 #print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")

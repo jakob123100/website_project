@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request
 import uvicorn
 import mysql.connector
 from datetime import datetime
-from ..client-side import api
 
 #start /home/bokajnevs/.local/bin/uvicorn webb_api:app --reload
 
@@ -114,7 +113,9 @@ async def root(category: str, start_date_time: str, end_date_time: str):
     return result
 
 @app.post("/{category}/InsertTest/")
-async def root(category: str, time: str, value: str):
+async def print_data_packet(category: str, json_data: dict):
+
+    return json_data
 
     if(not category in categories):
         return {"Invalid category"}
