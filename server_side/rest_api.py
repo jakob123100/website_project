@@ -118,38 +118,38 @@ async def print_data_packet(category: str, json_data: dict):
     value = json_data.get("value")
 
     if(not category in categories):
-        return {"Invalid category"}
+        return {"Message": "Invalid category"}
 
     if(not is_valid_date_time(date_time)):
-        return "Invalid Date Time"
+        return {"Message": "Invalid Date Time"}
 
     try:
         float(value)
     except ValueError:
-        return "Invalid Value"
+        return {"Message": "Invalid Value"}
 
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
 
-    time = time.replace("T", " ")
-
-    sql_command = sql_formula_get_specific_date_time % (category, time)
+    sql_command = sql_formula_get_specific_date_time % (category, date_time)
     #return sql_command
     mycursor.execute(sql_command)
     result = mycursor.fetchall()
 
     if(len(result) != 0):
-        return "Time already documented"
+        return {"Message": "Time already documented"}
 
-    sql_command = sql_formula_insert % (category, time, value)
+    sql_command = sql_formula_insert % (category, date_time, value)
 
     #return sql_command
 
     mycursor.execute(sql_command)
     mydb.commit()
 
-    return sql_command
+    return {"Message": "Db updated"}
+
+    #return sql_command
 
     #mycursor.execute(sql_formula, example_temp)
 

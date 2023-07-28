@@ -3,11 +3,25 @@ from datetime import datetime
 
 class data_fetcher:
     class datatype:
-        temperature: int = 0
+        class temp:
+            heatpump_in = 0
+            heatpump_out = 1
+            indoor = 2
+            outdoor = 3
+            sauna = 4
 
     __api_url = "http://213.67.132.100:80/"
     __is_connected_api_path = "IsConnected"
-    __temperature_api_path = "Temperature"
+
+    class paths:
+        class categories:
+            class temps:
+                heatpump_in = 'temp_heatpump_in_c'
+                heatpump_out = 'temp_heatpump_out_c'
+                indoor = 'temp_indoor_c'
+                outdoor = 'temp_outdoor_c'
+                sauna = 'temp_sauna_c'
+
     __get_latest_api_path = "GetLatest"
 
     def __init__(self) -> None:
@@ -28,18 +42,19 @@ class data_fetcher:
         date_time_string = date_time_string[:19]
 
         try:
-            #print(self.__api_url + path)
+            print(self.__api_url + path)
             json_data = {"date_time": date_time_string, "value": value}
             response = requests.post(self.__api_url + path, json=json_data)
         except requests.exceptions.InvalidURL:
             print("Could not connect to api url")
             return None
 
+        print(response)
         return response.json()
     
     def __get_category_string(self, datatype) -> str:
-        if(datatype == self.datatype.temperature):
-            return self.__temperature_api_path
+        if(datatype == self.datatype.temp.indoor):
+            return self.paths.categories.temps.indoor
 
     def is_connencted(self) -> bool:
         response = self.__request_json_data(self.__is_connected_api_path)
@@ -62,12 +77,12 @@ class data_fetcher:
 
     
 df = data_fetcher()
-dt = datetime.strptime("2023/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
-dt = datetime.now()
+dt = datetime.strptime("2022/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+#dt = datetime.now()
 
 #dp.date_time = datetime.time
 #dp.value = 24
 
-print(df.test_instet(df.datatype.temperature, dt, 24))
+print(df.test_instet(df.datatype.temp.indoor, dt, 333.3))
 #last_temp_data = df.get_latest(df.datatype.temperature)
 #print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")
