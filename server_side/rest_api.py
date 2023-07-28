@@ -44,7 +44,7 @@ sql_formula_get_betwen_date_time = "SELECT * FROM %s WHERE " + \
 #if (__name__ == "__main__"):
 #    uvicorn.run("webb_api:app", host="192.168.0.127", reload=True)
 
-#[ip]/[database]/[table]/[]
+#[ip]/[operation]/[database]/[table]/[query]
 
 @app.get("/")
 async def root():
@@ -114,15 +114,13 @@ async def root(category: str, start_date_time: str, end_date_time: str):
 
 @app.post("/{category}/InsertTest/")
 async def print_data_packet(category: str, json_data: dict):
-
-    return json_data
+    date_time = json_data.get("date_time")
+    value = json_data.get("value")
 
     if(not category in categories):
         return {"Invalid category"}
-    
-    format = "%Y-%m-%dT%H:%M:%S"
 
-    if(not is_valid_date_time(time)):
+    if(not is_valid_date_time(date_time)):
         return "Invalid Date Time"
 
     try:
