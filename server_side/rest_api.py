@@ -50,11 +50,11 @@ sql_formula_get_betwen_date_time = "SELECT * FROM %s WHERE " + \
 async def root():
     return {"example": "This is an example", "data": 0}
 
-@app.get("/IsConnected/")
+@app.get("/IsConnected")
 async def root():
     return {"Connected": True}
 
-@app.get("/Categories/")
+@app.get("/Categories")
 async def root():
     mydb = connect_to_database()
     mycursor = mydb.cursor()
@@ -67,10 +67,14 @@ async def root():
         
     return {"categorys": category_string} 
 
-@app.get("/GetAll/{category}")
-async def root(category: str):
+@app.get("/{category}/Get/{operation}")
+async def root(category: str, operation: str, json_data: dict):
+    if(operation == "All"):
+        return(get_all_items_in_table(category))
+
+def get_all_items_in_table(category: str):
     if(not category in categories):
-        return "Invalid category"
+        return {"Error": "Invalid category"}
 
     mydb = connect_to_database()
 
@@ -79,15 +83,15 @@ async def root(category: str):
 
     result = mycursor.fetchall()
 
-    if(result == None):
-        return "No result found"
-
     return result
 
-@app.get("/GetBetweenDateTime/{category}/{start_date_time}/{end_date_time}")
-async def root(category: str, start_date_time: str, end_date_time: str):
+@app.get("/{category}/GetBetweenDateTime")
+async def root(category: str, time_data: dict):
     if(not category in categories):
         return "Invalid category"
+    
+    start_date_time = time_data.get("start_time")
+    end_date_time = time_data.get("end_time")
     
     if(not is_valid_date_time(start_date_time)):
         return "Invalid start time"
@@ -112,7 +116,7 @@ async def root(category: str, start_date_time: str, end_date_time: str):
 
     return result
 
-@app.post("/{category}/InsertTest/")
+@app.post("/{category}/Insert")
 async def print_data_packet(category: str, json_data: dict):
     date_time = json_data.get("date_time")
     value = json_data.get("value")
@@ -133,7 +137,6 @@ async def print_data_packet(category: str, json_data: dict):
     mycursor = mydb.cursor()
 
     sql_command = sql_formula_get_specific_date_time % (category, date_time)
-    #return sql_command
     mycursor.execute(sql_command)
     result = mycursor.fetchall()
 
@@ -142,65 +145,10 @@ async def print_data_packet(category: str, json_data: dict):
 
     sql_command = sql_formula_insert % (category, date_time, value)
 
-    #return sql_command
-
     mycursor.execute(sql_command)
     mydb.commit()
 
     return {"Message": "Db updated"}
-
-    #return sql_command
-
-    #mycursor.execute(sql_formula, example_temp)
-
-    #result = mycursor.fetchone()
-
-    #return {"Date": result[0], "Temperature": result[1]}
-
-@app.post("/{category}/Insert/time={time}/value={value}")
-async def root(category: str, time: str, value: str):
-
-    if(not category in categories):
-        return {"Invalid category"}
-    
-    format = "%Y-%m-%dT%H:%M:%S"
-
-    if(not is_valid_date_time(time)):
-        return "Invalid Date Time"
-
-    try:
-        float(value)
-    except ValueError:
-        return "Invalid Value"
-
-    mydb = connect_to_database()
-
-    mycursor = mydb.cursor()
-
-    time = time.replace("T", " ")
-
-    sql_command = sql_formula_get_specific_date_time % (category, time)
-    #return sql_command
-    mycursor.execute(sql_command)
-    result = mycursor.fetchall()
-
-    if(len(result) != 0):
-        return "Time already documented"
-
-    sql_command = sql_formula_insert % (category, time, value)
-
-    #return sql_command
-
-    mycursor.execute(sql_command)
-    mydb.commit()
-
-    return sql_command
-
-    #mycursor.execute(sql_formula, example_temp)
-
-    #result = mycursor.fetchone()
-
-    #return {"Date": result[0], "Temperature": result[1]}
 
 
 def is_valid_date_time(date_time: str) -> bool:

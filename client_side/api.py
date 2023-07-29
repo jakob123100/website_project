@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime
 
-class data_fetcher:
+class datebase_inteface:
     class datatype:
         class temp:
             heatpump_in = 0
@@ -12,6 +12,7 @@ class data_fetcher:
 
     __api_url = "http://213.67.132.100:80/"
     __is_connected_api_path = "IsConnected"
+    __get_latest_api_path = "GetLatest"
 
     class paths:
         class categories:
@@ -22,7 +23,6 @@ class data_fetcher:
                 outdoor = 'temp_outdoor_c'
                 sauna = 'temp_sauna_c'
 
-    __get_latest_api_path = "GetLatest"
 
     def __init__(self) -> None:
         pass
@@ -67,16 +67,16 @@ class data_fetcher:
     
     def get_latest(self, datatype) -> dict:
         category = self.__get_category_string(datatype)
-        temperature_data: dict = self.__request_json_data(f"{category}{self.__get_latest_api_path}")
+        temperature_data: dict = self.__request_json_data(f"{category}/{self.__get_latest_api_path}")
         return temperature_data
     
-    def test_instet(self, datatype, date_time: datetime, value: float):
+    def instet(self, datatype, date_time: datetime, value: float):
         category = self.__get_category_string(datatype)
         response = self.__post_json_data(f"{category}/InsertTest/", date_time, value)
         return response
 
     
-df = data_fetcher()
+df = datebase_inteface()
 dt = datetime.strptime("2022/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
 #dt = datetime.now()
 
