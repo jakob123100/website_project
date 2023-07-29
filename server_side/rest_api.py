@@ -68,7 +68,7 @@ async def root():
     return {"categorys": category_string} 
 
 @app.get("/{category}/Get/{operation}")
-async def root(category: str, operation: str, json_data: dict):
+async def root(category: str, operation: str, json_data: dict = None):
     if(operation == "All"):
         return(get_all_items_in_table(category))
 
