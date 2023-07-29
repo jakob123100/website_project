@@ -83,7 +83,7 @@ def get_all_items_in_table(category: str):
 
     result = mycursor.fetchall()
 
-    return result
+    return {"Response": result}
 
 @app.get("/{category}/GetBetweenDateTime")
 async def root(category: str, time_data: dict):
