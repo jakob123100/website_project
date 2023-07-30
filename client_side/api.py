@@ -11,8 +11,7 @@ class datebase_inteface:
             sauna = 4
 
     __api_url = "http://213.67.132.100:80/"
-    __is_connected_api_path = "IsConnected"
-    __get_latest_api_path = "GetLatest"
+    __is_connected_api_path = "is-connected"
 
     class paths:
         class categories:
@@ -27,13 +26,20 @@ class datebase_inteface:
     def __init__(self) -> None:
         pass
 
-    def __request_json_data(self, path) -> dict:
+    def __datetime_to_str(self, date_time: datetime) -> str:
+        date_time_string = str(date_time).replace(" ", "T")
+        date_time_string = date_time_string[:19]
+        return date_time_string
+
+    def __request_json_data(self, path, json_data: dict = None) -> dict:
         try:
             #print(self.__api_url + path)
-            response = requests.get(self.__api_url + path)
+            response = requests.get(self.__api_url + path, json=json_data)
         except requests.exceptions.InvalidURL:
             print("Could not connect to api url")
             return None
+
+        print(response)
 
         return response.json()
     
@@ -67,22 +73,38 @@ class datebase_inteface:
     
     def get_latest(self, datatype) -> dict:
         category = self.__get_category_string(datatype)
-        temperature_data: dict = self.__request_json_data(f"{category}/{self.__get_latest_api_path}")
-        return temperature_data
+        response_data: dict = self.__request_json_data(f"{category}/get/latest")
+        return response_data
+    
+    def get_all(self, datatype) -> dict:
+        category = self.__get_category_string(datatype)
+        response_data: dict = self.__request_json_data(f"{category}/get/latest")
+        return response_data
+    
+    def get_between_time(self, datatype: int, start_time: datetime, end_time: datetime) -> dict:
+        category = self.__get_category_string(datatype)
+        start_time_str = self.__datetime_to_str(start_time)
+        end_time_str = self.__datetime_to_str(end_time)
+        time_data = {"start_time": start_time_str, "end_time": end_time_str}
+        
+        response_data: dict = self.__request_json_data(f"{category}/get/between-date-time", json_data=time_data)
+        return response_data
     
     def instet(self, datatype, date_time: datetime, value: float):
         category = self.__get_category_string(datatype)
-        response = self.__post_json_data(f"{category}/InsertTest/", date_time, value)
+        response = self.__post_json_data(f"{category}/insert/", date_time, value)
         return response
 
     
-df = datebase_inteface()
-dt = datetime.strptime("2022/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+#df = datebase_inteface()
+#dt1 = datetime.strptime("2012/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+#dt2 = datetime.strptime("2032/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
 #dt = datetime.now()
 
 #dp.date_time = datetime.time
 #dp.value = 24
 
-print(df.test_instet(df.datatype.temp.indoor, dt, 333.3))
+#print(df.instet(df.datatype.temp.indoor, dt1, 333.3))
+#print(df.get_between_time(df.datatype.temp.indoor, dt1, dt2).get("Response"))
 #last_temp_data = df.get_latest(df.datatype.temperature)
 #print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")
