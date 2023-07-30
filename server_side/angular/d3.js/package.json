@@ -1,0 +1,14 @@
+{
+  "name": "85c75b0d016c814f",
+  "main": "85c75b0d016c814f@16.js",
+  "version": "16.0.0",
+  "homepage": "https://observablehq.com/d/85c75b0d016c814f",
+  "author": {
+    "name": "bokajnevs's Workspace",
+    "url": "https://observablehq.com/@bokajnevs-ws"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}

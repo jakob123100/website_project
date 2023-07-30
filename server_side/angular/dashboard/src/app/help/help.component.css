@@ -1,0 +1,48 @@
+body {
+    background-color: #090a0e;  /* Dark background */
+    color: #ddd;  /* Light text */
+    font-family: 'Roboto', sans-serif;  /* Change the font */
+}
+
+.plot{
+    background: #191c24;
+    border-radius: 10px;
+}
+  
+.tooltip {
+    position: absolute;
+    padding: 1%;
+    background: rgba(0, 0, 0, 0.8);  /* Dark tooltip with some transparency */
+    color: #ddd;  /* Light text in tooltip */
+    border: 1px solid #999;  /* Gray border */
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+.chartTitle {
+    fill: #ddd;
+    font-size: larger;
+    font-family: 'Lato', sans-serif;
+}
+
+.x.label, .y.label, .tooltip {
+    fill: #ddd;
+    font-size: larger;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.legend{
+    fill: #ddd;
+    font-size: medium;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.axis text {
+    font-size: medium;  /* Increase font size */
+    fill: #ddd;  /* Light color for dark theme */
+  }
+
+.dot{
+    fill:#0dcaf0;
+    opacity: .75;
+}

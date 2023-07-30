@@ -96,15 +96,15 @@ class datebase_inteface:
         return response
 
     
-#df = datebase_inteface()
-#dt1 = datetime.strptime("2012/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
-#dt2 = datetime.strptime("2032/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+df = datebase_inteface()
+dt1 = datetime.strptime("2012/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+dt2 = datetime.strptime("2032/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
 #dt = datetime.now()
 
 #dp.date_time = datetime.time
 #dp.value = 24
 
-#print(df.instet(df.datatype.temp.indoor, dt1, 333.3))
-#print(df.get_between_time(df.datatype.temp.indoor, dt1, dt2).get("Response"))
+#print(df.instet(df.datatype.temp.indoor, dt, 21.2))
+print(df.get_between_time(df.datatype.temp.indoor, dt1, dt2).get("Response"))
 #last_temp_data = df.get_latest(df.datatype.temperature)
 #print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")
