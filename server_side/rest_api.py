@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 import uvicorn
 import mysql.connector
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
 #start /home/bokajnevs/.local/bin/uvicorn webb_api:app --reload
 
@@ -45,6 +46,16 @@ sql_formula_get_betwen_date_time = "SELECT * FROM %s WHERE " + \
 #    uvicorn.run("webb_api:app", host="192.168.0.127", reload=True)
 
 #[ip]/[operation]/[database]/[table]/[query]
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
