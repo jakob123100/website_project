@@ -2,6 +2,8 @@ import { ViewEncapsulation } from '@angular/core';
 import { Component, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { HttpClient } from '@angular/common/http';
+import { interval } from 'rxjs';
+import { startWith, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-help',
@@ -15,24 +17,22 @@ export class HelpComponent implements OnInit {
 
   constructor(private http: HttpClient) { }
 
-  /*private data = [
-    {date: new Date(2020, 0, 1, 2, 30, 13), value: 130},
-    {date: new Date(2020, 0, 1, 10), value: 170},
-    {date: new Date(2020, 0, 2, 15), value: 210},
-    {date: new Date(2020, 0, 2, 23), value: 210},
-    // Add more data points here...
-  ];*/
-
-  ngOnInit() {
-    this.http.get('http://213.67.132.100:7777/temp_indoor_c/get/all').subscribe((res: any) => {
+  ngOnInit() {  
+    interval(50000).pipe(
+      startWith(0),  // So that it fetches immediately
+      switchMap(() => this.http.get('http://213.67.132.100:7777/temp_indoor_c/get/all'))
+    ).subscribe((res: any) => {
       this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
-      console.log(this.data);
-      this.data.reverse()
-      this.createChart();  // Call createChart here
+      this.data.reverse();
+      this.createChart();
     });
+
+    
   }
 
   createChart() {
+    d3.select('body').html("");
+
     this.data = this.data.map((d, i) => ({id: i, date: new Date(d.date), value: d.value}))
 
     // Define the colors for the legend
@@ -113,7 +113,10 @@ export class HelpComponent implements OnInit {
     // Y-axis
     let yAxisG = svg.append("g")
       .attr("class", "axis axis--y")  // Add class to the y-axis
-      .call(d3.axisLeft(yScale).ticks(5).tickPadding(10).tickSize(10));
+      .call(d3.axisLeft(yScale)
+      .ticks(5)
+      .tickPadding(10)
+      .tickSize(10));
 
     // X-axis label
     svg.append("text")
@@ -184,7 +187,7 @@ export class HelpComponent implements OnInit {
       .attr("class", "dot-hover")
       .attr("cx", d => xScale(d.date))
       .attr("cy", d => yScale(d.value))
-      .attr("r", 50)  // Set a larger radius for the hover area
+      .attr("r", 30)  // Set a larger radius for the hover area
       .style("opacity", 0)  // Make the circle invisible
       // Attach the mouseover and mouseout events to these circles
       .on("mouseover", (event, d) => {

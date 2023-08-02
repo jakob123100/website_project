@@ -2,20 +2,20 @@ import requests
 from datetime import datetime
 
 class datebase_inteface:
-    class datatype:
-        class temp:
+    class datatypes:
+        class temperatures:
             heatpump_in = 0
             heatpump_out = 1
             indoor = 2
             outdoor = 3
             sauna = 4
 
-    __api_url = "http://213.67.132.100:80/"
+    __api_url = "http://217.208.66.120:7777/"
     __is_connected_api_path = "is-connected"
 
     class paths:
         class categories:
-            class temps:
+            class temperatures:
                 heatpump_in = 'temp_heatpump_in_c'
                 heatpump_out = 'temp_heatpump_out_c'
                 indoor = 'temp_indoor_c'
@@ -59,8 +59,17 @@ class datebase_inteface:
         return response.json()
     
     def __get_category_string(self, datatype) -> str:
-        if(datatype == self.datatype.temp.indoor):
-            return self.paths.categories.temps.indoor
+        if(datatype == self.datatypes.temperatures.indoor):
+            return self.paths.categories.temperatures.indoor
+        
+        if(datatype == self.datatypes.temperatures.outdoor):
+            return self.paths.categories.temperatures.outdoor
+        
+        if(datatype == self.datatypes.temperatures.heatpump_in):
+            return self.paths.categories.temperatures.heatpump_in
+        
+        if(datatype == self.datatypes.temperatures.heatpump_out):
+            return self.paths.categories.temperatures.heatpump_out
 
     def is_connencted(self) -> bool:
         response = self.__request_json_data(self.__is_connected_api_path)
@@ -95,16 +104,18 @@ class datebase_inteface:
         response = self.__post_json_data(f"{category}/insert/", date_time, value)
         return response
 
-    
-df = datebase_inteface()
-dt1 = datetime.strptime("2012/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
-dt2 = datetime.strptime("2032/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
-#dt = datetime.now()
+if(__name__ == "__main__"):
+    #import random
+    df = datebase_inteface()
+    dt1 = datetime.strptime("2012/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+    dt2 = datetime.strptime("2032/07/27T16:30:22", "%Y/%m/%dT%H:%M:%S")
+    #dt = datetime.now()
 
-#dp.date_time = datetime.time
-#dp.value = 24
+    #dp.date_time = datetime.time
+    #dp.value = 24
 
-#print(df.instet(df.datatype.temp.indoor, dt, 21.2))
-print(df.get_between_time(df.datatype.temp.indoor, dt1, dt2).get("Response"))
-#last_temp_data = df.get_latest(df.datatype.temperature)
-#print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")
+    #print(df.instet(df.datatype.temp.indoor, dt, random.randrange(0, 100)))
+    print(df.get_between_time(df.datatypes.temperatures.indoor, dt1, dt2).get("Response"))
+    #last_temp_data = df.get_latest(df.datatype.temperature)
+    #print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")
+    pass
