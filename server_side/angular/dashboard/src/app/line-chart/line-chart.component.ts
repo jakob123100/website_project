@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { HttpClient } from '@angular/common/http';
 import { interval } from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
+import { delay, startWith, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-line-chart',
@@ -23,9 +23,11 @@ export class LineChartComponent implements OnInit {
   private xAxis: any;
   private yAxis: any;
   private line: any;
-  private totalLength: any;
-  private old_len: any;
+  private valueline: any;
+  private totalLength = 0;
+  private old_len = 0;
   private tooltip: any;
+  private tooltip_enabled: boolean = false;
 
   private minY = 0
   private maxY = 0
@@ -39,15 +41,15 @@ export class LineChartComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.http.get('http://217.208.66.120:7777/temp_outdoor_c/get/all')
+    this.http.get('http://217.208.66.120:7777/koltrastvägen/temp_outdoor_c/get/all')
     .subscribe((res: any) => {
       this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
       this.data.reverse();
       this.createChart();
 
       interval(5000).pipe(
-        startWith(0),
-        switchMap(() => this.http.get('http://217.208.66.120:7777/temp_outdoor_c/get/all'))
+        delay(5000),
+        switchMap(() => this.http.get('http://217.208.66.120:7777/koltrastvägen/temp_outdoor_c/get/all'))
       ).subscribe((res: any) => {
         this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
         this.data.reverse();
@@ -71,10 +73,10 @@ export class LineChartComponent implements OnInit {
     labels = labels.slice(0, 1);
     colors = colors.slice(0, 1);
 
-    let min_time: Date = new Date(d3.min(this.data, d => d.date) ?? new Date);
+    let min_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
     let max_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
     
-    /*min_time.setHours(0)
+    min_time.setHours(0)
     min_time.setMinutes(0)
     min_time.setSeconds(0)
     min_time.setMilliseconds(0)
@@ -82,7 +84,7 @@ export class LineChartComponent implements OnInit {
     max_time.setHours(23)
     max_time.setMinutes(59)
     max_time.setSeconds(59)
-    max_time.setMilliseconds(0)*/
+    max_time.setMilliseconds(0)
 
     this.xScale = d3.scaleTime()
       //.domain(d3.extent(this.data, d => d.date) as [Date, Date])
@@ -95,12 +97,12 @@ export class LineChartComponent implements OnInit {
     this.yScale = d3.scaleLinear()
     .domain([
       Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0), 
-      Math.max(this.maxY, d3.max(this.data, d => d.value) ?? 0)
+      Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
     ] as [number, number])
     .range([this.height, 0]);
 
     // Define the line
-    let valueline = d3.line<{ date: Date, value: number }>()
+    this.valueline = d3.line<{ date: Date, value: number }>()
       .x(d => this.xScale(d.date))
       .y(d => this.yScale(d.value))
       .curve(d3.curveMonotoneX);
@@ -134,7 +136,7 @@ export class LineChartComponent implements OnInit {
       .attr('fill', 'none')
       .attr('stroke', colors[0])
       .attr('stroke-width', 2)
-      .attr('d', valueline)
+      .attr('d', this.valueline)
       .style("filter", "url(#glow)");
 
     // Add the animation
@@ -221,26 +223,53 @@ export class LineChartComponent implements OnInit {
       .attr("class", "tooltip")
       .style("opacity", 0);
 
-    // Invisible hover dot
-    this.svg.selectAll(".dot-hover")
-      .data(this.data)
-      .enter().append("circle")
-      .attr("class", "dot-hover")
-      .attr("cx", (d: any) => this.xScale(d.date))
-      .attr("cy", (d: any) => this.yScale(d.value))
-      .attr("r", 5)  // Set a larger radius for the hover area
-      // Attach the mouseover and mouseout events to these circles
-      .on("mouseover", (event: MouseEvent, d: {date: Date, value: number}) => {
-        let old_dot = this.svg.append("circle")
-        .attr("class", "dot")  // Assign a class to this dot so you can select and remove it later
-        .attr("cx", this.xScale(d.date))
-        .attr("cy", this.yScale(d.value)).transition()
-        .duration(200)
-        .attr("r", 5);
-        let data = d as {date: Date, value: number};
-        this.tooltip.transition()
-          .duration(200)
-          .style("opacity", .9);
+    // Add a circle element
+
+    const circle = this.svg.append("circle")
+      .attr("class", "dot")
+      .attr("r", 0)
+      .attr("fill", "steelblue")
+      .style("stroke", "white")
+      .attr("opacity", .70)
+      .style("pointer-events", "none");
+      // create a listening rectangle
+
+      const listeningRect = this.svg.append("rect")
+      .attr("width", this.width)
+      .attr("height", this.height)
+      .attr("opacity", 0);
+
+    listeningRect.on("mousemove", (event: MouseEvent) => {
+      const [xCoord] = d3.pointer(event, this);
+      const bisectDate = d3.bisector((d:any) => d.date).left;
+      const x0 = this.xScale.invert(xCoord - 68);
+      const i = bisectDate(this.data, x0, 1);
+      const d0: any = this.data[i - 1];
+      const d1: any = this.data[i];
+      try{
+        const data = x0 - d0.date > d1.date - x0 ? d1 : d0;
+        const xPos = this.xScale(data.date);
+        const yPos = this.yScale(data.value);
+
+        // Update the circle position
+
+        circle.attr("cx", xPos)
+          .attr("cy", yPos);
+
+        // Add transition for the circle radius
+
+        if(!this.tooltip_enabled){
+          circle.transition()
+            .duration(300)
+            .attr("r", 5);
+  
+          this.tooltip.transition()
+            .duration(300)
+            .style("opacity", .9);
+  
+            this.tooltip_enabled = true;
+        }
+
         this.tooltip.html("Date: " + data.date.getFullYear() + "/" + data.date.getMonth() + 1 + "/" + data.date.getDate() + 
         " " + data.date.getHours() + ":" + data.date.getMinutes() + ":" + data.date.getSeconds() +
         "<br/>Value: " + data.value);
@@ -252,27 +281,47 @@ export class LineChartComponent implements OnInit {
         let tooltipBox = node.getBoundingClientRect();
         this.tooltip.style("left", (this.margin.left + this.xScale(data.date) + 35) + "px")
           .style("top", (this.yScale(data.value) + tooltipBox.height/2) + "px");
-      })
-      
-      .on("mouseout", (event: MouseEvent, d: {date: Date, value: number}) => {
-        this.svg.selectAll(".dot").transition()
-        .duration(500)
-        .attr("r", 0)
-        .on("end", () => {
-          this.svg.select("dot").remove();
-        })
-
-        this.tooltip.transition()
+        
+      }
+      catch{
+        if(!this.tooltip_enabled){
+          return;
+        }
+        circle.transition()
+          .duration(500)
+          .attr("r", 0);
+    
+          this.tooltip.transition()
           .duration(500)
           .style("opacity", 0);
+
+          this.tooltip_enabled = false;
+      }
+      })
+
+      listeningRect.on("mouseout", (event: MouseEvent, d: {date: Date, value: number}) => {
+
+        if(!this.tooltip_enabled){
+          return;
+        }
+
+        circle.transition()
+          .duration(500)
+          .attr("r", 0);
+    
+          this.tooltip.transition()
+          .duration(500)
+          .style("opacity", 0);
+          
+          this.tooltip_enabled = false;
       });
   }
 
   updateChart() {
-    let min_time: Date = new Date(d3.min(this.data, d => d.date) ?? new Date);
+    let min_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
     let max_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
     
-    /*min_time.setHours(0)
+    min_time.setHours(0)
     min_time.setMinutes(0)
     min_time.setSeconds(0)
     min_time.setMilliseconds(0)
@@ -280,7 +329,7 @@ export class LineChartComponent implements OnInit {
     max_time.setHours(23)
     max_time.setMinutes(59)
     max_time.setSeconds(59)
-    max_time.setMilliseconds(0)*/
+    max_time.setMilliseconds(0)
 
     this.xScale = d3.scaleTime()
       //.domain(d3.extent(this.data, d => d.date) as [Date, Date])
@@ -308,7 +357,7 @@ export class LineChartComponent implements OnInit {
     this.yAxis.call(d3.axisLeft(this.yScale).ticks(5).tickPadding(10).tickSize(10));
 
     // Update the line generator
-    let valueline = d3.line<{ date: Date, value: number }>()
+    this.valueline = d3.line<{ date: Date, value: number }>()
       .x(d => this.xScale(d.date))
       .y(d => this.yScale(d.value))
       .curve(d3.curveMonotoneX);
@@ -318,81 +367,30 @@ export class LineChartComponent implements OnInit {
       .y(d => this.yScale(d.value))
       .curve(d3.curveMonotoneX);
 
+    // Bind the data to the line
+    const update = this.svg.selectAll(".chart.line").data([this.data]);
+
+    // Update the line
+    update.enter().append("path").merge(update).attr("d", this.valueline);
+
+    // Remove old elements as needed
+    update.exit().remove();
+
     // Add the animation
     this.totalLength = (this.line.node() as SVGPathElement).getTotalLength();
 
     this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
       .attr("stroke-dashoffset", (0))
 
-    /*this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
+    this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
       .attr("stroke-dashoffset", (this.totalLength - this.old_len))
       .transition()
       .duration(2000)
       //.ease(d3.easeLinear)
-      .attr("stroke-dashoffset", 0);*/
+      .attr("stroke-dashoffset", 0);
 
       
     this.old_len = this.totalLength
-
-    // Bind the data to the line
-    const update = this.svg.selectAll(".chart.line").data([this.data]);
-
-    // Update the line
-    update.enter().append("path").merge(update).attr("d", valueline);
-
-    // Remove old elements as needed
-    update.exit().remove();
-
-    // Update the invisible hover dots
-    let updateDotHover = this.svg.selectAll(".dot-hover")
-      .data(this.data);
-
-    updateDotHover.enter().append("circle")
-      .attr("class", "dot-hover")
-      .attr("r", 5)  // Set a larger radius for the hover area
-      // Attach the mouseover and mouseout events to these circles
-      .on("mouseover", (event: MouseEvent, d: {date: Date, value: number}) => {
-        let old_dot = this.svg.append("circle")
-        .attr("class", "dot")  // Assign a class to this dot so you can select and remove it later
-        .attr("cx", this.xScale(d.date))
-        .attr("cy", this.yScale(d.value)).transition()
-        .duration(200)
-        .attr("r", 5);
-        let data = d as {date: Date, value: number};
-        this.tooltip.transition()
-          .duration(200)
-          .style("opacity", .9);
-        this.tooltip.html("Date: " + data.date.getFullYear() + "/" + data.date.getMonth() + 1 + "/" + data.date.getDate() + 
-        " " + data.date.getHours() + ":" + data.date.getMinutes() + ":" + data.date.getSeconds() +
-        "<br/>Value: " + data.value);
-        let node = this.tooltip.node()
-        if(node === null){
-          return
-        }
-        
-        let tooltipBox = node.getBoundingClientRect();
-        this.tooltip.style("left", (this.margin.left + this.xScale(data.date) + 35) + "px")
-          .style("top", (this.yScale(data.value) + tooltipBox.height/2) + "px");
-      })
-      
-      .on("mouseout", (event: MouseEvent, d: {date: Date, value: number}) => {
-        this.svg.selectAll(".dot").transition()
-        .duration(500)
-        .attr("r", 0)
-        .on("end", () => {
-          this.svg.select("dot").remove();
-        })
-
-        this.tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
-      })
-
-      .merge(updateDotHover)
-      .attr("cx", (d: any) => this.xScale(d.date))
-      .attr("cy", (d: any) => this.yScale(d.value));
-
-    updateDotHover.exit().remove();
   }
 
 }
