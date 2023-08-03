@@ -138,7 +138,7 @@ async def root():
 
 @app.get("/is-connected")
 async def root():
-    return {"connected": True}
+    return {"Connected": True}
 
 @app.get("/tables")
 async def root():
@@ -243,14 +243,16 @@ async def print_data_packet(site: str, category: str, json_data: dict):
 
     mycursor = mydb.cursor()
 
-    sql_command = sql_formula_get_specific_date_time % (site + "_" + category, date_time)
+    table_name = site + "_" + category
+
+    sql_command = sql_formula_get_specific_date_time % (table_name, date_time)
     mycursor.execute(sql_command)
     result = mycursor.fetchall()
 
     if(len(result) != 0):
         return {"Message": "Time already documented"}
 
-    sql_command = sql_formula_insert % (category, date_time, value)
+    sql_command = sql_formula_insert % (table_name, date_time, value)
 
     mycursor.execute(sql_command)
     mydb.commit()
