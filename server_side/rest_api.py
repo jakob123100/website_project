@@ -1,4 +1,4 @@
-#from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request
 import uvicorn
 import mysql.connector
 from datetime import datetime
@@ -11,7 +11,7 @@ app = FastAPI()
 #http://213.67.132.100/
 
 sites = [
-    "koltrastvägen_15",
+    "koltrastvägen",
     "finnbacka"
 ]
 
@@ -22,11 +22,11 @@ categories = [
     ("pv_solar_power_kW", (6, 3)), 
     ("battery_power_kW", (6, 3)), 
 
-    ("temp_outdoor_C", (6, 3)), 
-    ("temp_indoor_C", (6, 3)), 
-    ("temp_heatpump_in_C", (6, 3)), 
-    ("temp_heatpump_out_C", (6, 3)), 
-    ("temp_sauna_C", (6, 3)), 
+    ("temp_outdoor_c", (6, 3)), 
+    ("temp_indoor_c", (6, 3)), 
+    ("temp_heatpump_in_c", (6, 3)), 
+    ("temp_heatpump_out_c", (6, 3)), 
+    ("temp_sauna_c", (6, 3)), 
     ("air_pressure_hPa", (6, 2)), 
 
     ("grid_import_hour_energy_kWh", (9, 3)), 
@@ -101,8 +101,8 @@ categories = [
     ("battery_end_month_energy_kWh", (9, 3)), 
     ("battery_end_year_energy_kWh", (9, 3)), 
 
-    ("battery_SoC_%", (4, 1)), 
-    ("battery_SoH_%", (4, 1)), 
+    ("battery_Soc_percent", (4, 1)), 
+    ("battery_SoH_percent", (4, 1)), 
     ("battery_capacity_new_kWh", (9, 3)), 
     ("battery_capacity_now_kWh", (9, 3)), 
 
@@ -138,9 +138,9 @@ async def root():
 
 @app.get("/is-connected")
 async def root():
-    return {"Connected": True}
+    return {"connected": True}
 
-@app.get("/categories")
+@app.get("/tables")
 async def root():
     mydb = connect_to_database()
     mycursor = mydb.cursor()
@@ -151,51 +151,49 @@ async def root():
     for tb in mycursor:
         category_string += str(tb)
         
-    return {"categorys": category_string} 
+    return {"tables": category_string} 
 
-@app.get("/{category}/get/{operation}")
-async def root(category: str, operation: str, json_data: dict = None):
+@app.get("/{site}/{category}/get/{operation}")
+async def root(site: str, category: str, operation: str, json_data: dict = None):
+    if(not site in sites):
+        {"Response": "Site is not reconized"}
+
+    if(not category in categories):
+        {"Response": "category is not reconized"}
+
     response = None
+    table_name = f"{site}_{category}"
     if(operation == "latest"):
-        response = get_latets_item_in_table(category)
+        response = get_latets_item_in_table(table_name)
     elif(operation == "all"):
-        response = get_all_items_in_table(category)
+        response = get_all_items_in_table(table_name)
     elif(operation == "between-date-time"):
-        response = get_between_date_time(category, time_data = json_data)
+        response = get_between_date_time(table_name, time_data = json_data)
 
 
     return({"Response": response})
 
-def get_latets_item_in_table(category: str):
-    if(not category in categories):
-        return {"Error": "Invalid category"}
-
+def get_latets_item_in_table(table_name: str):
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    mycursor.execute(f"SELECT * FROM {category} ORDER BY date_time DESC")
+    mycursor.execute(f"SELECT * FROM {table_name} ORDER BY date_time DESC")
 
     result = mycursor.fetchone()
 
     return result
 
-def get_all_items_in_table(category: str):
-    if(not category in categories):
-        return {"Error": "Invalid category"}
-
+def get_all_items_in_table(table_name: str):
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    mycursor.execute(f"SELECT * FROM {category} ORDER BY date_time DESC")
+    mycursor.execute(f"SELECT * FROM {table_name} ORDER BY date_time DESC")
 
     result = mycursor.fetchall()
 
     return result
 
-def get_between_date_time(category: str, time_data: dict):
-    if(not category in categories):
-        return "Invalid category"
-    
+def get_between_date_time(table_name: str, time_data: dict):
     start_date_time = time_data.get("start_time")
     end_date_time = time_data.get("end_time")
     
@@ -211,7 +209,7 @@ def get_between_date_time(category: str, time_data: dict):
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    sql_command = sql_formula_get_betwen_date_time % (category, start_date_time, end_date_time)
+    sql_command = sql_formula_get_betwen_date_time % (table_name, start_date_time, end_date_time)
 
     mycursor.execute(sql_command)
 
@@ -222,8 +220,8 @@ def get_between_date_time(category: str, time_data: dict):
 
     return result
 
-@app.post("/{category}/insert")
-async def print_data_packet(category: str, json_data: dict):
+@app.post("/{site}/{category}/insert")
+async def print_data_packet(site: str, category: str, json_data: dict):
     date_time = json_data.get("date_time")
     value = json_data.get("value")
 
@@ -242,7 +240,7 @@ async def print_data_packet(category: str, json_data: dict):
 
     mycursor = mydb.cursor()
 
-    sql_command = sql_formula_get_specific_date_time % (category, date_time)
+    sql_command = sql_formula_get_specific_date_time % (site + "_" + category, date_time)
     mycursor.execute(sql_command)
     result = mycursor.fetchall()
 
@@ -289,29 +287,51 @@ def connect_to_database(database_name: str = "koltrast_15_data"):
     return database
 
 save = [
-    'temp_heatpump_in_c',
-    'temp_heatpump_out_c',
-    'temp_indoor_c',
-    'temp_outdoor_c',
-    'temp_sauna_c'
+    
     ]
 
-for site in sites:
-    for category in categories:
-        sql_command = f"CREATE TABLE {site}/{category[0]} (date_time DATETIME(0), value FLOAT{str(category[1])})"
-        print(sql_command)
 
-    """mydb = connect_to_database()
+def update_tables():
+    mydb = connect_to_database()
 
     mycursor = mydb.cursor()
 
-    sql_command = f"DROP Table {category}"
-    print(sql_command)
-    try:
+    sql_command = f"SHOW TABLES"
+    mycursor.execute(sql_command)
+    tables = mycursor.fetchall()
+
+    table_names = []
+
+    for site in sites:
+        for category in categories:
+            table_name = f"{site}_{category[0]}"
+            table_names.append(table_name)
+
+            if((table_name,) in tables):
+                continue
+
+            sql_command = f"cREATE TABLE {table_name} (date_time DATETIME(0), value FLOAT{str(category[1])})"
+            print(sql_command)
+
+            mycursor.execute(sql_command)
+            mydb.commit()
+
+    for table in tables:
+        if(table[0] in save or table[0] in table_names):
+            continue
+        sql_command = f"DROP TABLE {table[0]}"
+        print(sql_command)
         mycursor.execute(sql_command)
         mydb.commit()
-    except:
-        print(category + "not found")"""
+
+"""("temp_outdoor_c", (6, 3)), 
+    ("temp_indoor_c", (6, 3)), 
+    ("temp_heatpump_in_c", (6, 3)), 
+    ("temp_heatpump_out_c", (6, 3)), 
+    ("temp_sauna_c", (6, 3)), """
+
+#update_tables()
+
 
 """
 for category in categories:
