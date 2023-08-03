@@ -213,6 +213,27 @@ def connect_to_database(database_name: str = "koltrast_15_data"):
 
     return database
 
+save = [
+    'temp_heatpump_in_c',
+    'temp_heatpump_out_c',
+    'temp_indoor_c',
+    'temp_outdoor_c',
+    'temp_sauna_c'
+    ]
+
+for category in categories:
+    if(category in save):
+        continue
+
+    mydb = connect_to_database()
+
+    mycursor = mydb.cursor()
+
+    sql_command = f"DROP Table {category}"
+    print(sql_command)
+    #mycursor.execute(sql_command)
+    #mydb.commit()
+
 """
 for category in categories:
     mydb = connect_to_database()
