@@ -181,6 +181,19 @@ async def print_data_packet(category: str, json_data: dict):
 
     return {"Message": "Db updated"}
 
+@app.get("/clear")
+async def clear_db():
+    for category in categories:
+        mydb = connect_to_database()
+
+        mycursor = mydb.cursor()
+
+        sql_command = f"DELETE FROM {category}"
+        mycursor.execute(sql_command)
+        mydb.commit()
+
+    return {"Message": "Db cleared"}
+
 
 def is_valid_date_time(date_time: str) -> bool:
     format = "%Y-%m-%dT%H:%M:%S"
