@@ -10,31 +10,106 @@ app = FastAPI()
 #http://127.0.0.1:8000/
 #http://213.67.132.100/
 
+sites = [
+    "koltrastvägen",
+    "finnbacka"
+]
+
+#({table_name: str}, (digits:int, decimal:int))
 categories = [
-    'air_pressure_hPa',
-    'day_battery_cumulative_energy_kWh',
-    'day_battery_power_kW',
-    'day_battery_soC',
-    'day_grid_cumulative_energy_kWh',
-    'day_grid_power_kW',
-    'day_home_cumulative_energy_kWh',
-    'day_home_power_kW',
-    'day_pv_cumulative_energy_kWh',
-    'day_pv_power_kW',
-    'month_grid_energy_kWh',
-    'month_house_energy_kWh',
-    'month_pv_energy_kWh',
-    'temp_heatpump_in_c',
-    'temp_heatpump_out_c',
-    'temp_indoor_c',
-    'temp_outdoor_c',
-    'temp_sauna_c',
-    'week_grid_energy_kWh',
-    'week_house_energy_kWh',
-    'week_pv_energy_kWh',
-    'year_grid_energy_kWh',
-    'year_house_energy_kWh',
-    'year_pv_energy_kWh',
+    ("grid_power_kW", (6, 3)), 
+    ("home_power_kW", (6, 3)), 
+    ("pv_solar_power_kW", (6, 3)), 
+    ("battery_power_kW", (6, 3)), 
+
+    ("temp_outdoor_c", (6, 3)), 
+    ("temp_indoor_c", (6, 3)), 
+    ("temp_heatpump_in_c", (6, 3)), 
+    ("temp_heatpump_out_c", (6, 3)), 
+    ("temp_sauna_c", (6, 3)), 
+    ("air_pressure_hPa", (6, 2)), 
+
+    ("grid_import_hour_energy_kWh", (9, 3)), 
+    ("grid_import_day_energy_kWh", (9, 3)), 
+    ("grid_import_week_energy_kWh", (9, 3)), 
+    ("grid_import_month_energy_kWh", (9, 3)), 
+    ("grid_import_year_energy_kWh", (9, 3)), 
+
+    ("grid_export_hour_energy_kWh", (9, 3)), 
+    ("grid_export_day_energy_kWh", (9, 3)), 
+    ("grid_export_week_energy_kWh", (9, 3)), 
+    ("grid_export_month_energy_kWh", (9, 3)), 
+    ("grid_export_year_energy_kWh", (9, 3)), 
+
+    ("grid_net_hour_energy_kWh", (9, 3)), 
+    ("grid_net_day_energy_kWh", (9, 3)), 
+    ("grid_net_week_energy_kWh", (9, 3)), 
+    ("grid_net_month_energy_kWh", (9, 3)), 
+    ("grid_net_year_energy_kWh", (9, 3)), 
+
+    ("pv_solar_hour_energy_kWh", (9, 3)), 
+    ("pv_solar_day_energy_kWh", (9, 3)), 
+    ("pv_solar_week_energy_kWh", (9, 3)), 
+    ("pv_solar_month_energy_kWh", (9, 3)), 
+    ("pv_solar_year_energy_kWh", (9, 3)), 
+
+    ("home_hour_energy_kWh", (9, 3)), 
+    ("home_day_energy_kWh", (9, 3)), 
+    ("home_week_energy_kWh", (9, 3)), 
+    ("home_month_energy_kWh", (9, 3)), 
+    ("home_year_energy_kWh", (9, 3)), 
+
+    ("battery_hour_energy_kWh", (9, 3)), 
+    ("battery_day_energy_kWh", (9, 3)), 
+    ("battery_week_energy_kWh", (9, 3)), 
+    ("battery_month_energy_kWh", (9, 3)), 
+    ("battery_year_energy_kWh", (9, 3)), 
+
+    ("grid_import_end_hour_energy_kWh", (9, 3)), 
+    ("grid_import_end_day_energy_kWh", (9, 3)), 
+    ("grid_import_end_week_energy_kWh", (9, 3)), 
+    ("grid_import_end_month_energy_kWh", (9, 3)), 
+    ("grid_import_end_year_energy_kWh", (9, 3)), 
+
+    ("grid_export_end_hour_energy_kWh", (9, 3)), 
+    ("grid_export_end_day_energy_kWh", (9, 3)), 
+    ("grid_export_end_week_energy_kWh", (9, 3)), 
+    ("grid_export_end_month_energy_kWh", (9, 3)), 
+    ("grid_export_end_year_energy_kWh", (9, 3)), 
+
+    ("grid_net_end_hour_energy_kWh", (9, 3)), 
+    ("grid_net_end_day_energy_kWh", (9, 3)), 
+    ("grid_net_end_week_energy_kWh", (9, 3)), 
+    ("grid_net_end_month_energy_kWh", (9, 3)), 
+    ("grid_net_end_year_energy_kWh", (9, 3)), 
+
+    ("pv_solar_end_hour_energy_kWh", (9, 3)), 
+    ("pv_solar_end_day_energy_kWh", (9, 3)), 
+    ("pv_solar_end_week_energy_kWh", (9, 3)), 
+    ("pv_solar_end_month_energy_kWh", (9, 3)), 
+    ("pv_solar_end_year_energy_kWh", (9, 3)), 
+
+    ("home_end_hour_energy_kWh", (9, 3)), 
+    ("home_end_day_energy_kWh", (9, 3)), 
+    ("home_end_week_energy_kWh", (9, 3)), 
+    ("home_end_month_energy_kWh", (9, 3)), 
+    ("home_end_year_energy_kWh", (9, 3)), 
+
+    ("battery_end_hour_energy_kWh", (9, 3)), 
+    ("battery_end_day_energy_kWh", (9, 3)), 
+    ("battery_end_week_energy_kWh", (9, 3)), 
+    ("battery_end_month_energy_kWh", (9, 3)), 
+    ("battery_end_year_energy_kWh", (9, 3)), 
+
+    ("battery_Soc_percent", (4, 1)), 
+    ("battery_SoH_percent", (4, 1)), 
+    ("battery_capacity_new_kWh", (9, 3)), 
+    ("battery_capacity_now_kWh", (9, 3)), 
+
+    ("extra1", (9, 3)), 
+    ("extra2", (9, 3)), 
+    ("extra3", (9, 3)), 
+    ("extra4", (9, 3))
 ]
 
 sql_formula_insert = "INSERT INTO %s (date_time, value) VALUES ('%s', '%s')" #TABLE, DATETIME, FLOAT
@@ -63,9 +138,9 @@ async def root():
 
 @app.get("/is-connected")
 async def root():
-    return {"Connected": True}
+    return {"connected": True}
 
-@app.get("/categories")
+@app.get("/tables")
 async def root():
     mydb = connect_to_database()
     mycursor = mydb.cursor()
@@ -76,51 +151,49 @@ async def root():
     for tb in mycursor:
         category_string += str(tb)
         
-    return {"categorys": category_string} 
+    return {"tables": category_string} 
 
-@app.get("/{category}/get/{operation}")
-async def root(category: str, operation: str, json_data: dict = None):
+@app.get("/{site}/{category}/get/{operation}")
+async def root(site: str, category: str, operation: str, json_data: dict = None):
+    if(not site in sites):
+        {"Response": "Site is not reconized"}
+
+    if(not category in categories):
+        {"Response": "category is not reconized"}
+
     response = None
+    table_name = f"{site}_{category}"
     if(operation == "latest"):
-        response = get_latets_item_in_table(category)
+        response = get_latets_item_in_table(table_name)
     elif(operation == "all"):
-        response = get_all_items_in_table(category)
+        response = get_all_items_in_table(table_name)
     elif(operation == "between-date-time"):
-        response = get_between_date_time(category, time_data = json_data)
+        response = get_between_date_time(table_name, time_data = json_data)
 
 
     return({"Response": response})
 
-def get_latets_item_in_table(category: str):
-    if(not category in categories):
-        return {"Error": "Invalid category"}
-
+def get_latets_item_in_table(table_name: str):
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    mycursor.execute(f"SELECT * FROM {category} ORDER BY date_time DESC")
+    mycursor.execute(f"SELECT * FROM {table_name} ORDER BY date_time DESC")
 
     result = mycursor.fetchone()
 
     return result
 
-def get_all_items_in_table(category: str):
-    if(not category in categories):
-        return {"Error": "Invalid category"}
-
+def get_all_items_in_table(table_name: str):
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    mycursor.execute(f"SELECT * FROM {category} ORDER BY date_time DESC")
+    mycursor.execute(f"SELECT * FROM {table_name} ORDER BY date_time DESC")
 
     result = mycursor.fetchall()
 
     return result
 
-def get_between_date_time(category: str, time_data: dict):
-    if(not category in categories):
-        return "Invalid category"
-    
+def get_between_date_time(table_name: str, time_data: dict):
     start_date_time = time_data.get("start_time")
     end_date_time = time_data.get("end_time")
     
@@ -136,7 +209,7 @@ def get_between_date_time(category: str, time_data: dict):
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    sql_command = sql_formula_get_betwen_date_time % (category, start_date_time, end_date_time)
+    sql_command = sql_formula_get_betwen_date_time % (table_name, start_date_time, end_date_time)
 
     mycursor.execute(sql_command)
 
@@ -147,8 +220,8 @@ def get_between_date_time(category: str, time_data: dict):
 
     return result
 
-@app.post("/{category}/insert")
-async def print_data_packet(category: str, json_data: dict):
+@app.post("/{site}/{category}/insert")
+async def print_data_packet(site: str, category: str, json_data: dict):
     date_time = json_data.get("date_time")
     value = json_data.get("value")
 
@@ -167,7 +240,7 @@ async def print_data_packet(category: str, json_data: dict):
 
     mycursor = mydb.cursor()
 
-    sql_command = sql_formula_get_specific_date_time % (category, date_time)
+    sql_command = sql_formula_get_specific_date_time % (site + "_" + category, date_time)
     mycursor.execute(sql_command)
     result = mycursor.fetchall()
 
@@ -180,6 +253,20 @@ async def print_data_packet(category: str, json_data: dict):
     mydb.commit()
 
     return {"Message": "Db updated"}
+
+@app.get("/clear")
+async def clear_db():
+    for site in sites:
+        for category in categories:
+            mydb = connect_to_database()
+
+            mycursor = mydb.cursor()
+
+            sql_command = f"DELETE FROM {site}_{category}"
+            mycursor.execute(sql_command)
+            mydb.commit()
+
+    return {"Message": "Db cleared"}
 
 
 def is_valid_date_time(date_time: str) -> bool:
@@ -199,6 +286,53 @@ def connect_to_database(database_name: str = "koltrast_15_data"):
     )
 
     return database
+
+save = [
+    
+    ]
+
+
+def update_tables():
+    mydb = connect_to_database()
+
+    mycursor = mydb.cursor()
+
+    sql_command = f"SHOW TABLES"
+    mycursor.execute(sql_command)
+    tables = mycursor.fetchall()
+
+    table_names = []
+
+    for site in sites:
+        for category in categories:
+            table_name = f"{site}_{category[0]}"
+            table_names.append(table_name)
+
+            if((table_name,) in tables):
+                continue
+
+            sql_command = f"cREATE TABLE {table_name} (date_time DATETIME(0), value FLOAT{str(category[1])})"
+            print(sql_command)
+
+            mycursor.execute(sql_command)
+            mydb.commit()
+
+    for table in tables:
+        if(table[0] in save or table[0] in table_names):
+            continue
+        sql_command = f"DROP TABLE {table[0]}"
+        print(sql_command)
+        mycursor.execute(sql_command)
+        mydb.commit()
+
+"""("temp_outdoor_c", (6, 3)), 
+    ("temp_indoor_c", (6, 3)), 
+    ("temp_heatpump_in_c", (6, 3)), 
+    ("temp_heatpump_out_c", (6, 3)), 
+    ("temp_sauna_c", (6, 3)), """
+
+#update_tables()
+
 
 """
 for category in categories:
