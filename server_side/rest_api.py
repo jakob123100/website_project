@@ -231,8 +231,11 @@ for category in categories:
 
     sql_command = f"DROP Table {category}"
     print(sql_command)
-    #mycursor.execute(sql_command)
-    #mydb.commit()
+    try:
+        mycursor.execute(sql_command)
+        mydb.commit()
+    except:
+        print(category + "not found")
 
 """
 for category in categories:
