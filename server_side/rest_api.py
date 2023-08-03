@@ -256,14 +256,15 @@ async def print_data_packet(site: str, category: str, json_data: dict):
 
 @app.get("/clear")
 async def clear_db():
-    for category in categories:
-        mydb = connect_to_database()
+    for site in sites:
+        for category in categories:
+            mydb = connect_to_database()
 
-        mycursor = mydb.cursor()
+            mycursor = mydb.cursor()
 
-        sql_command = f"DELETE FROM {category}"
-        mycursor.execute(sql_command)
-        mydb.commit()
+            sql_command = f"DELETE FROM {site}_{category}"
+            mycursor.execute(sql_command)
+            mydb.commit()
 
     return {"Message": "Db cleared"}
 
