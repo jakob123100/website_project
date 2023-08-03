@@ -195,7 +195,7 @@ if(__name__ == "__main__"):
     #dp.value = 24
 
     #print(df.instet(df.datatype.temp.indoor, dt, random.randrange(0, 100)))
-    print(df.get_between_time(df.paths.sites.koltrastvägen, df.paths.categories.temperature.outdoor, dt1, dt2).get("Response"))
+    #print(df.get_between_time(df.paths.sites.koltrastvägen, df.paths.categories.temperature.outdoor, dt1, dt2).get("Response"))
     #last_temp_data = df.get_latest(df.datatype.temperature)
     #print(f"Time: {last_temp_data['Date']}, Temperature: {last_temp_data['Temperature']}")
     pass

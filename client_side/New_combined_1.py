@@ -483,8 +483,8 @@ while True:
 
     dt = datetime.datetime.now()
 
-    print(di.instet(di.datatypes.temperatures.outdoor, dt, temp_c[0]))
-    print(di.instet(di.datatypes.temperatures.indoor, dt, temp_c[1]))
-    print(di.instet(di.datatypes.temperatures.heatpump_in, dt, temp_c[2]))
-    print(di.instet(di.datatypes.temperatures.heatpump_out, dt, temp_c[3]))
-    print(di.instet(di.datatypes.temperatures.sauna, dt, temp_c[4]))
+    print(di.insert(di.paths.sites.koltrastvägen, di.paths.categories.temperature.outdoor, dt, temp_c[0]))
+    print(di.insert(di.paths.sites.koltrastvägen, di.paths.categories.temperature.indoor, dt, temp_c[1]))
+    print(di.insert(di.paths.sites.koltrastvägen, di.paths.categories.temperature.heatpump_in, dt, temp_c[2]))
+    print(di.insert(di.paths.sites.koltrastvägen, di.paths.categories.temperature.heatpump_out, dt, temp_c[3]))
+    print(di.insert(di.paths.sites.koltrastvägen, di.paths.categories.temperature.sauna, dt, temp_c[4]))

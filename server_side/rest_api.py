@@ -17,99 +17,99 @@ sites = [
 
 #({table_name: str}, (digits:int, decimal:int))
 categories = [
-    ("grid_power_kW", (6, 3)), 
-    ("home_power_kW", (6, 3)), 
-    ("pv_solar_power_kW", (6, 3)), 
-    ("battery_power_kW", (6, 3)), 
+    "grid_power_kW", 
+    "home_power_kW", 
+    "pv_solar_power_kW", 
+    "battery_power_kW", 
 
-    ("temp_outdoor_c", (6, 3)), 
-    ("temp_indoor_c", (6, 3)), 
-    ("temp_heatpump_in_c", (6, 3)), 
-    ("temp_heatpump_out_c", (6, 3)), 
-    ("temp_sauna_c", (6, 3)), 
-    ("air_pressure_hPa", (6, 2)), 
+    "temp_outdoor_c", 
+    "temp_indoor_c", 
+    "temp_heatpump_in_c", 
+    "temp_heatpump_out_c", 
+    "temp_sauna_c", 
+    "air_pressure_hPa", 
 
-    ("grid_import_hour_energy_kWh", (9, 3)), 
-    ("grid_import_day_energy_kWh", (9, 3)), 
-    ("grid_import_week_energy_kWh", (9, 3)), 
-    ("grid_import_month_energy_kWh", (9, 3)), 
-    ("grid_import_year_energy_kWh", (9, 3)), 
+    "grid_import_hour_energy_kWh", 
+    "grid_import_day_energy_kWh", 
+    "grid_import_week_energy_kWh", 
+    "grid_import_month_energy_kWh", 
+    "grid_import_year_energy_kWh", 
 
-    ("grid_export_hour_energy_kWh", (9, 3)), 
-    ("grid_export_day_energy_kWh", (9, 3)), 
-    ("grid_export_week_energy_kWh", (9, 3)), 
-    ("grid_export_month_energy_kWh", (9, 3)), 
-    ("grid_export_year_energy_kWh", (9, 3)), 
+    "grid_export_hour_energy_kWh", 
+    "grid_export_day_energy_kWh", 
+    "grid_export_week_energy_kWh", 
+    "grid_export_month_energy_kWh", 
+    "grid_export_year_energy_kWh", 
 
-    ("grid_net_hour_energy_kWh", (9, 3)), 
-    ("grid_net_day_energy_kWh", (9, 3)), 
-    ("grid_net_week_energy_kWh", (9, 3)), 
-    ("grid_net_month_energy_kWh", (9, 3)), 
-    ("grid_net_year_energy_kWh", (9, 3)), 
+    "grid_net_hour_energy_kWh", 
+    "grid_net_day_energy_kWh", 
+    "grid_net_week_energy_kWh", 
+    "grid_net_month_energy_kWh", 
+    "grid_net_year_energy_kWh", 
 
-    ("pv_solar_hour_energy_kWh", (9, 3)), 
-    ("pv_solar_day_energy_kWh", (9, 3)), 
-    ("pv_solar_week_energy_kWh", (9, 3)), 
-    ("pv_solar_month_energy_kWh", (9, 3)), 
-    ("pv_solar_year_energy_kWh", (9, 3)), 
+    "pv_solar_hour_energy_kWh", 
+    "pv_solar_day_energy_kWh", 
+    "pv_solar_week_energy_kWh", 
+    "pv_solar_month_energy_kWh", 
+    "pv_solar_year_energy_kWh", 
 
-    ("home_hour_energy_kWh", (9, 3)), 
-    ("home_day_energy_kWh", (9, 3)), 
-    ("home_week_energy_kWh", (9, 3)), 
-    ("home_month_energy_kWh", (9, 3)), 
-    ("home_year_energy_kWh", (9, 3)), 
+    "home_hour_energy_kWh", 
+    "home_day_energy_kWh", 
+    "home_week_energy_kWh", 
+    "home_month_energy_kWh", 
+    "home_year_energy_kWh", 
 
-    ("battery_hour_energy_kWh", (9, 3)), 
-    ("battery_day_energy_kWh", (9, 3)), 
-    ("battery_week_energy_kWh", (9, 3)), 
-    ("battery_month_energy_kWh", (9, 3)), 
-    ("battery_year_energy_kWh", (9, 3)), 
+    "battery_hour_energy_kWh", 
+    "battery_day_energy_kWh", 
+    "battery_week_energy_kWh", 
+    "battery_month_energy_kWh", 
+    "battery_year_energy_kWh", 
 
-    ("grid_import_end_hour_energy_kWh", (9, 3)), 
-    ("grid_import_end_day_energy_kWh", (9, 3)), 
-    ("grid_import_end_week_energy_kWh", (9, 3)), 
-    ("grid_import_end_month_energy_kWh", (9, 3)), 
-    ("grid_import_end_year_energy_kWh", (9, 3)), 
+    "grid_import_end_hour_energy_kWh", 
+    "grid_import_end_day_energy_kWh", 
+    "grid_import_end_week_energy_kWh", 
+    "grid_import_end_month_energy_kWh", 
+    "grid_import_end_year_energy_kWh", 
 
-    ("grid_export_end_hour_energy_kWh", (9, 3)), 
-    ("grid_export_end_day_energy_kWh", (9, 3)), 
-    ("grid_export_end_week_energy_kWh", (9, 3)), 
-    ("grid_export_end_month_energy_kWh", (9, 3)), 
-    ("grid_export_end_year_energy_kWh", (9, 3)), 
+    "grid_export_end_hour_energy_kWh", 
+    "grid_export_end_day_energy_kWh", 
+    "grid_export_end_week_energy_kWh", 
+    "grid_export_end_month_energy_kWh", 
+    "grid_export_end_year_energy_kWh", 
 
-    ("grid_net_end_hour_energy_kWh", (9, 3)), 
-    ("grid_net_end_day_energy_kWh", (9, 3)), 
-    ("grid_net_end_week_energy_kWh", (9, 3)), 
-    ("grid_net_end_month_energy_kWh", (9, 3)), 
-    ("grid_net_end_year_energy_kWh", (9, 3)), 
+    "grid_net_end_hour_energy_kWh", 
+    "grid_net_end_day_energy_kWh", 
+    "grid_net_end_week_energy_kWh", 
+    "grid_net_end_month_energy_kWh", 
+    "grid_net_end_year_energy_kWh", 
 
-    ("pv_solar_end_hour_energy_kWh", (9, 3)), 
-    ("pv_solar_end_day_energy_kWh", (9, 3)), 
-    ("pv_solar_end_week_energy_kWh", (9, 3)), 
-    ("pv_solar_end_month_energy_kWh", (9, 3)), 
-    ("pv_solar_end_year_energy_kWh", (9, 3)), 
+    "pv_solar_end_hour_energy_kWh", 
+    "pv_solar_end_day_energy_kWh", 
+    "pv_solar_end_week_energy_kWh", 
+    "pv_solar_end_month_energy_kWh", 
+    "pv_solar_end_year_energy_kWh", 
 
-    ("home_end_hour_energy_kWh", (9, 3)), 
-    ("home_end_day_energy_kWh", (9, 3)), 
-    ("home_end_week_energy_kWh", (9, 3)), 
-    ("home_end_month_energy_kWh", (9, 3)), 
-    ("home_end_year_energy_kWh", (9, 3)), 
+    "home_end_hour_energy_kWh", 
+    "home_end_day_energy_kWh", 
+    "home_end_week_energy_kWh", 
+    "home_end_month_energy_kWh", 
+    "home_end_year_energy_kWh", 
 
-    ("battery_end_hour_energy_kWh", (9, 3)), 
-    ("battery_end_day_energy_kWh", (9, 3)), 
-    ("battery_end_week_energy_kWh", (9, 3)), 
-    ("battery_end_month_energy_kWh", (9, 3)), 
-    ("battery_end_year_energy_kWh", (9, 3)), 
+    "battery_end_hour_energy_kWh", 
+    "battery_end_day_energy_kWh", 
+    "battery_end_week_energy_kWh", 
+    "battery_end_month_energy_kWh", 
+    "battery_end_year_energy_kWh", 
 
-    ("battery_Soc_percent", (4, 1)), 
-    ("battery_SoH_percent", (4, 1)), 
-    ("battery_capacity_new_kWh", (9, 3)), 
-    ("battery_capacity_now_kWh", (9, 3)), 
+    "battery_Soc_percent", 
+    "battery_SoH_percent", 
+    "battery_capacity_new_kWh", 
+    "battery_capacity_now_kWh", 
 
-    ("extra1", (9, 3)), 
-    ("extra2", (9, 3)), 
-    ("extra3", (9, 3)), 
-    ("extra4", (9, 3))
+    "extra1", 
+    "extra2", 
+    "extra3", 
+    "extra4"
 ]
 
 sql_formula_insert = "INSERT INTO %s (date_time, value) VALUES ('%s', '%s')" #TABLE, DATETIME, FLOAT
@@ -138,7 +138,7 @@ async def root():
 
 @app.get("/is-connected")
 async def root():
-    return {"connected": True}
+    return {"Connected": True}
 
 @app.get("/tables")
 async def root():
@@ -156,10 +156,10 @@ async def root():
 @app.get("/{site}/{category}/get/{operation}")
 async def root(site: str, category: str, operation: str, json_data: dict = None):
     if(not site in sites):
-        {"Response": "Site is not reconized"}
+        return {"Response": "Site is not reconized"}
 
     if(not category in categories):
-        {"Response": "category is not reconized"}
+        return {"Response": "category is not reconized"}
 
     response = None
     table_name = f"{site}_{category}"
@@ -225,8 +225,11 @@ async def print_data_packet(site: str, category: str, json_data: dict):
     date_time = json_data.get("date_time")
     value = json_data.get("value")
 
+    if(not site in sites):
+        return {"Response": "Site is not reconized"}
+
     if(not category in categories):
-        return {"Message": "Invalid category"}
+        return {"Response": "category is not reconized"}
 
     if(not is_valid_date_time(date_time)):
         return {"Message": "Invalid Date Time"}
@@ -240,14 +243,16 @@ async def print_data_packet(site: str, category: str, json_data: dict):
 
     mycursor = mydb.cursor()
 
-    sql_command = sql_formula_get_specific_date_time % (site + "_" + category, date_time)
+    table_name = site + "_" + category
+
+    sql_command = sql_formula_get_specific_date_time % (table_name, date_time)
     mycursor.execute(sql_command)
     result = mycursor.fetchall()
 
     if(len(result) != 0):
         return {"Message": "Time already documented"}
 
-    sql_command = sql_formula_insert % (category, date_time, value)
+    sql_command = sql_formula_insert % (table_name, date_time, value)
 
     mycursor.execute(sql_command)
     mydb.commit()
@@ -286,52 +291,6 @@ def connect_to_database(database_name: str = "koltrast_15_data"):
     )
 
     return database
-
-save = [
-    
-    ]
-
-
-def update_tables():
-    mydb = connect_to_database()
-
-    mycursor = mydb.cursor()
-
-    sql_command = f"SHOW TABLES"
-    mycursor.execute(sql_command)
-    tables = mycursor.fetchall()
-
-    table_names = []
-
-    for site in sites:
-        for category in categories:
-            table_name = f"{site}_{category[0]}"
-            table_names.append(table_name)
-
-            if((table_name,) in tables):
-                continue
-
-            sql_command = f"cREATE TABLE {table_name} (date_time DATETIME(0), value FLOAT{str(category[1])})"
-            print(sql_command)
-
-            mycursor.execute(sql_command)
-            mydb.commit()
-
-    for table in tables:
-        if(table[0] in save or table[0] in table_names):
-            continue
-        sql_command = f"DROP TABLE {table[0]}"
-        print(sql_command)
-        mycursor.execute(sql_command)
-        mydb.commit()
-
-"""("temp_outdoor_c", (6, 3)), 
-    ("temp_indoor_c", (6, 3)), 
-    ("temp_heatpump_in_c", (6, 3)), 
-    ("temp_heatpump_out_c", (6, 3)), 
-    ("temp_sauna_c", (6, 3)), """
-
-#update_tables()
 
 
 """
