@@ -28,7 +28,7 @@ export class LineChartComponent implements OnInit {
   private tooltip: any;
 
   private minY = 0
-  private maxY = 100
+  private maxY = 0
 
   // Define the colors for the legend
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
@@ -39,19 +39,19 @@ export class LineChartComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.http.get('http://213.67.132.100:7777/temp_indoor_c/get/all')
+    this.http.get('http://217.208.66.120:7777/temp_outdoor_c/get/all')
     .subscribe((res: any) => {
       this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
       this.data.reverse();
       this.createChart();
 
       interval(5000).pipe(
-        startWith(5000),
-        switchMap(() => this.http.get('http://213.67.132.100:7777/temp_indoor_c/get/all'))
+        startWith(0),
+        switchMap(() => this.http.get('http://217.208.66.120:7777/temp_outdoor_c/get/all'))
       ).subscribe((res: any) => {
         this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
         this.data.reverse();
-        //this.updateChart();
+        this.updateChart();
       });
     });
   }
@@ -65,7 +65,7 @@ export class LineChartComponent implements OnInit {
     let colors = ["#0d6efd", "#198754", "#ab2e3c"];
   
     // Define the labels for the legend
-    let labels = ["Temp Indoor", "Data 2", "Data 3"];
+    let labels = ["Temp Outdoors", "Data 2", "Data 3"];
 
     // Filter the labels and colors to only include the first 2
     labels = labels.slice(0, 1);
@@ -74,15 +74,15 @@ export class LineChartComponent implements OnInit {
     let min_time: Date = new Date(d3.min(this.data, d => d.date) ?? new Date);
     let max_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
     
-    min_time.setHours(3)
-    min_time.setMinutes(32)
-    min_time.setSeconds(30)
+    /*min_time.setHours(0)
+    min_time.setMinutes(0)
+    min_time.setSeconds(0)
     min_time.setMilliseconds(0)
 
-    max_time.setHours(3)
-    max_time.setMinutes(33)
-    max_time.setSeconds(0)
-    max_time.setMilliseconds(0)
+    max_time.setHours(23)
+    max_time.setMinutes(59)
+    max_time.setSeconds(59)
+    max_time.setMilliseconds(0)*/
 
     this.xScale = d3.scaleTime()
       //.domain(d3.extent(this.data, d => d.date) as [Date, Date])
@@ -146,7 +146,7 @@ export class LineChartComponent implements OnInit {
       .attr("stroke-dashoffset", this.totalLength - this.old_len)
       .transition()
       .duration(2000)
-      .ease(d3.easeLinear)
+      .ease(d3.easePolyInOut)
       .attr("stroke-dashoffset", 0);
 
     this.old_len = this.totalLength
@@ -155,7 +155,12 @@ export class LineChartComponent implements OnInit {
     this.xAxis = this.svg.append("g")
       .attr("class", "axis axis--x")  // Add class to the x-axis
       .attr("transform", "translate(0," + this.height + ")")
-      .call(d3.axisBottom(this.xScale).ticks(5).tickPadding(10).tickSize(10));
+      .call(
+        d3.axisBottom(this.xScale)
+        .ticks(5)
+        .tickPadding(10)
+        .tickSize(10)
+        );
 
     // Y-axis
     this.yAxis = this.svg.append("g")
@@ -223,7 +228,7 @@ export class LineChartComponent implements OnInit {
       .attr("class", "dot-hover")
       .attr("cx", (d: any) => this.xScale(d.date))
       .attr("cy", (d: any) => this.yScale(d.value))
-      .attr("r", 30)  // Set a larger radius for the hover area
+      .attr("r", 5)  // Set a larger radius for the hover area
       // Attach the mouseover and mouseout events to these circles
       .on("mouseover", (event: MouseEvent, d: {date: Date, value: number}) => {
         let old_dot = this.svg.append("circle")
@@ -267,15 +272,15 @@ export class LineChartComponent implements OnInit {
     let min_time: Date = new Date(d3.min(this.data, d => d.date) ?? new Date);
     let max_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
     
-    min_time.setHours(3)
-    min_time.setMinutes(32)
-    min_time.setSeconds(30)
+    /*min_time.setHours(0)
+    min_time.setMinutes(0)
+    min_time.setSeconds(0)
     min_time.setMilliseconds(0)
 
-    max_time.setHours(3)
-    max_time.setMinutes(33)
-    max_time.setSeconds(0)
-    max_time.setMilliseconds(0)
+    max_time.setHours(23)
+    max_time.setMinutes(59)
+    max_time.setSeconds(59)
+    max_time.setMilliseconds(0)*/
 
     this.xScale = d3.scaleTime()
       //.domain(d3.extent(this.data, d => d.date) as [Date, Date])
@@ -288,12 +293,18 @@ export class LineChartComponent implements OnInit {
     this.yScale = d3.scaleLinear()
     .domain([
       Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0), 
-      Math.max(this.maxY, d3.max(this.data, d => d.value) ?? 0)
+      Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
     ] as [number, number])
     .range([this.height, 0]);
 
     // Update axes
-    this.xAxis.call(d3.axisBottom(this.xScale).ticks(5).tickPadding(10).tickSize(10));
+    this.xAxis
+    .call(
+      d3.axisBottom(this.xScale)
+      .ticks(5)
+      .tickPadding(10)
+      .tickSize(10)
+      );
     this.yAxis.call(d3.axisLeft(this.yScale).ticks(5).tickPadding(10).tickSize(10));
 
     // Update the line generator
@@ -308,15 +319,20 @@ export class LineChartComponent implements OnInit {
       .curve(d3.curveMonotoneX);
 
     // Add the animation
-    this.old_len = this.totalLength
     this.totalLength = (this.line.node() as SVGPathElement).getTotalLength();
 
     this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
+      .attr("stroke-dashoffset", (0))
+
+    /*this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
       .attr("stroke-dashoffset", (this.totalLength - this.old_len))
       .transition()
       .duration(2000)
-      .ease(d3.easeLinear)
-      .attr("stroke-dashoffset", 0);
+      //.ease(d3.easeLinear)
+      .attr("stroke-dashoffset", 0);*/
+
+      
+    this.old_len = this.totalLength
 
     // Bind the data to the line
     const update = this.svg.selectAll(".chart.line").data([this.data]);
@@ -333,7 +349,7 @@ export class LineChartComponent implements OnInit {
 
     updateDotHover.enter().append("circle")
       .attr("class", "dot-hover")
-      .attr("r", 30)  // Set a larger radius for the hover area
+      .attr("r", 5)  // Set a larger radius for the hover area
       // Attach the mouseover and mouseout events to these circles
       .on("mouseover", (event: MouseEvent, d: {date: Date, value: number}) => {
         let old_dot = this.svg.append("circle")

@@ -70,6 +70,9 @@ class datebase_inteface:
         
         if(datatype == self.datatypes.temperatures.heatpump_out):
             return self.paths.categories.temperatures.heatpump_out
+        
+        if(datatype == self.datatypes.temperatures.sauna):
+            return self.paths.categories.temperatures.sauna
 
     def is_connencted(self) -> bool:
         response = self.__request_json_data(self.__is_connected_api_path)

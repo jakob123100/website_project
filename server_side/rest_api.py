@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+#from fastapi import FastAPI, Request
 import uvicorn
 import mysql.connector
 from datetime import datetime
@@ -10,31 +10,106 @@ app = FastAPI()
 #http://127.0.0.1:8000/
 #http://213.67.132.100/
 
+sites = [
+    "koltrastvägen_15",
+    "finnbacka"
+]
+
+#({table_name: str}, (digits:int, decimal:int))
 categories = [
-    'air_pressure_hPa',
-    'day_battery_cumulative_energy_kWh',
-    'day_battery_power_kW',
-    'day_battery_soC',
-    'day_grid_cumulative_energy_kWh',
-    'day_grid_power_kW',
-    'day_home_cumulative_energy_kWh',
-    'day_home_power_kW',
-    'day_pv_cumulative_energy_kWh',
-    'day_pv_power_kW',
-    'month_grid_energy_kWh',
-    'month_house_energy_kWh',
-    'month_pv_energy_kWh',
-    'temp_heatpump_in_c',
-    'temp_heatpump_out_c',
-    'temp_indoor_c',
-    'temp_outdoor_c',
-    'temp_sauna_c',
-    'week_grid_energy_kWh',
-    'week_house_energy_kWh',
-    'week_pv_energy_kWh',
-    'year_grid_energy_kWh',
-    'year_house_energy_kWh',
-    'year_pv_energy_kWh',
+    ("grid_power_kW", (6, 3)), 
+    ("home_power_kW", (6, 3)), 
+    ("pv_solar_power_kW", (6, 3)), 
+    ("battery_power_kW", (6, 3)), 
+
+    ("temp_outdoor_C", (6, 3)), 
+    ("temp_indoor_C", (6, 3)), 
+    ("temp_heatpump_in_C", (6, 3)), 
+    ("temp_heatpump_out_C", (6, 3)), 
+    ("temp_sauna_C", (6, 3)), 
+    ("air_pressure_hPa", (6, 2)), 
+
+    ("grid_import_hour_energy_kWh", (9, 3)), 
+    ("grid_import_day_energy_kWh", (9, 3)), 
+    ("grid_import_week_energy_kWh", (9, 3)), 
+    ("grid_import_month_energy_kWh", (9, 3)), 
+    ("grid_import_year_energy_kWh", (9, 3)), 
+
+    ("grid_export_hour_energy_kWh", (9, 3)), 
+    ("grid_export_day_energy_kWh", (9, 3)), 
+    ("grid_export_week_energy_kWh", (9, 3)), 
+    ("grid_export_month_energy_kWh", (9, 3)), 
+    ("grid_export_year_energy_kWh", (9, 3)), 
+
+    ("grid_net_hour_energy_kWh", (9, 3)), 
+    ("grid_net_day_energy_kWh", (9, 3)), 
+    ("grid_net_week_energy_kWh", (9, 3)), 
+    ("grid_net_month_energy_kWh", (9, 3)), 
+    ("grid_net_year_energy_kWh", (9, 3)), 
+
+    ("pv_solar_hour_energy_kWh", (9, 3)), 
+    ("pv_solar_day_energy_kWh", (9, 3)), 
+    ("pv_solar_week_energy_kWh", (9, 3)), 
+    ("pv_solar_month_energy_kWh", (9, 3)), 
+    ("pv_solar_year_energy_kWh", (9, 3)), 
+
+    ("home_hour_energy_kWh", (9, 3)), 
+    ("home_day_energy_kWh", (9, 3)), 
+    ("home_week_energy_kWh", (9, 3)), 
+    ("home_month_energy_kWh", (9, 3)), 
+    ("home_year_energy_kWh", (9, 3)), 
+
+    ("battery_hour_energy_kWh", (9, 3)), 
+    ("battery_day_energy_kWh", (9, 3)), 
+    ("battery_week_energy_kWh", (9, 3)), 
+    ("battery_month_energy_kWh", (9, 3)), 
+    ("battery_year_energy_kWh", (9, 3)), 
+
+    ("grid_import_end_hour_energy_kWh", (9, 3)), 
+    ("grid_import_end_day_energy_kWh", (9, 3)), 
+    ("grid_import_end_week_energy_kWh", (9, 3)), 
+    ("grid_import_end_month_energy_kWh", (9, 3)), 
+    ("grid_import_end_year_energy_kWh", (9, 3)), 
+
+    ("grid_export_end_hour_energy_kWh", (9, 3)), 
+    ("grid_export_end_day_energy_kWh", (9, 3)), 
+    ("grid_export_end_week_energy_kWh", (9, 3)), 
+    ("grid_export_end_month_energy_kWh", (9, 3)), 
+    ("grid_export_end_year_energy_kWh", (9, 3)), 
+
+    ("grid_net_end_hour_energy_kWh", (9, 3)), 
+    ("grid_net_end_day_energy_kWh", (9, 3)), 
+    ("grid_net_end_week_energy_kWh", (9, 3)), 
+    ("grid_net_end_month_energy_kWh", (9, 3)), 
+    ("grid_net_end_year_energy_kWh", (9, 3)), 
+
+    ("pv_solar_end_hour_energy_kWh", (9, 3)), 
+    ("pv_solar_end_day_energy_kWh", (9, 3)), 
+    ("pv_solar_end_week_energy_kWh", (9, 3)), 
+    ("pv_solar_end_month_energy_kWh", (9, 3)), 
+    ("pv_solar_end_year_energy_kWh", (9, 3)), 
+
+    ("home_end_hour_energy_kWh", (9, 3)), 
+    ("home_end_day_energy_kWh", (9, 3)), 
+    ("home_end_week_energy_kWh", (9, 3)), 
+    ("home_end_month_energy_kWh", (9, 3)), 
+    ("home_end_year_energy_kWh", (9, 3)), 
+
+    ("battery_end_hour_energy_kWh", (9, 3)), 
+    ("battery_end_day_energy_kWh", (9, 3)), 
+    ("battery_end_week_energy_kWh", (9, 3)), 
+    ("battery_end_month_energy_kWh", (9, 3)), 
+    ("battery_end_year_energy_kWh", (9, 3)), 
+
+    ("battery_SoC_%", (4, 1)), 
+    ("battery_SoH_%", (4, 1)), 
+    ("battery_capacity_new_kWh", (9, 3)), 
+    ("battery_capacity_now_kWh", (9, 3)), 
+
+    ("extra1", (9, 3)), 
+    ("extra2", (9, 3)), 
+    ("extra3", (9, 3)), 
+    ("extra4", (9, 3))
 ]
 
 sql_formula_insert = "INSERT INTO %s (date_time, value) VALUES ('%s', '%s')" #TABLE, DATETIME, FLOAT
@@ -221,11 +296,12 @@ save = [
     'temp_sauna_c'
     ]
 
-for category in categories:
-    if(category in save):
-        continue
+for site in sites:
+    for category in categories:
+        sql_command = f"CREATE TABLE {site}/{category[0]} (date_time DATETIME(0), value FLOAT{str(category[1])})"
+        print(sql_command)
 
-    mydb = connect_to_database()
+    """mydb = connect_to_database()
 
     mycursor = mydb.cursor()
 
@@ -235,7 +311,7 @@ for category in categories:
         mycursor.execute(sql_command)
         mydb.commit()
     except:
-        print(category + "not found")
+        print(category + "not found")"""
 
 """
 for category in categories:
