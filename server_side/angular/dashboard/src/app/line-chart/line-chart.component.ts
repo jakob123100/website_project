@@ -53,7 +53,6 @@ export class LineChartComponent implements OnInit {
 
   private updateData() {
     interval(5000).pipe(
-      delay(5000),
       switchMap(() => this.fetchData())
     ).subscribe((res: any) => {
       this.data = this.processData(res.Response);
@@ -62,70 +61,70 @@ export class LineChartComponent implements OnInit {
     });
   }
 
-  createChart(){
-    d3.select('body').html("");
+  private createChart() {
+    this.initializeSvg();
+    this.createScales();
+    this.createLine();
+    this.addAxes();
+    this.addLabels();
+    this.addTitle();
+    this.addLegend();
+    this.addTooltip();
+  }
 
-    this.data = this.data.map((d, i) => ({id: i, date: new Date(d.date), value: d.value}))
-
-    // Define the colors for the legend
-    let colors = ["#0d6efd", "#198754", "#ab2e3c"];
-  
-    // Define the labels for the legend
-    let labels = ["Temp Outdoors", "Data 2", "Data 3"];
-
-    // Filter the labels and colors to only include the first 2
-    labels = labels.slice(0, 1);
-    colors = colors.slice(0, 1);
-
-    let min_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
-    let max_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
-    
-    min_time.setHours(0)
-    min_time.setMinutes(0)
-    min_time.setSeconds(0)
-    min_time.setMilliseconds(0)
-
-    max_time.setHours(23)
-    max_time.setMinutes(59)
-    max_time.setSeconds(59)
-    max_time.setMilliseconds(0)
-
-    this.xScale = d3.scaleTime()
-      //.domain(d3.extent(this.data, d => d.date) as [Date, Date])
-      .domain([
-        min_time, 
-        max_time
-      ] as [Date, Date])
-      .range([0, this.width]);
-
-    this.yScale = d3.scaleLinear()
-    .domain([
-      //Math.min(this.minY, d3.min(this.data, d => d.value - 5) ?? 0), 
-      d3.min(this.data, d => d.value - 5), 
-      d3.max(this.data, d => d.value + 5)
-    ] as [number, number])
-    .range([this.height, 0]);
-
-    // Define the line
-    this.valueline = d3.line<{ date: Date, value: number }>()
-      .x(d => this.xScale(d.date))
-      .y(d => this.yScale(d.value))
-      .curve(d3.curveMonotoneX);
-
+  private initializeSvg() {
     this.svg = d3.select('body').append('svg')
       .attr("class", "plot")
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height + this.margin.top + this.margin.bottom)
       .append('g')
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
-
+  }
+  
+  private createScales() {
+    // X scale
+    let min_time = this.getMinTime(this.data);
+    let max_time = this.getMaxTime(this.data);
+  
+    this.xScale = d3.scaleTime()
+      .domain([min_time, max_time] as [Date, Date])
+      .range([0, this.width]);
+  
+    // Y scale
+    this.yScale = d3.scaleLinear()
+      .domain([
+        Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0),
+        Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
+      ] as [number, number])
+      .range([this.height, 0]);
+  }
+  
+  private getMinTime(data: {date: Date, value: number}[]): Date {
+    let min_time: Date = new Date(d3.min(data, d => d.date) ?? new Date);
+    min_time.setHours(0);
+    min_time.setMinutes(0);
+    min_time.setSeconds(0);
+    min_time.setMilliseconds(0);
+    return min_time;
+  }
+  
+  private getMaxTime(data: {date: Date, value: number}[]): Date {
+    let max_time: Date = new Date(d3.max(data, d => d.date) ?? new Date);
+    max_time.setHours(23);
+    max_time.setMinutes(59);
+    max_time.setSeconds(59);
+    max_time.setMilliseconds(0);
+    return max_time;
+  }
+  
+  private createLine() {
     this.svg.append("defs")
       .append("filter")
       .attr("id", "glow")
       .append("feGaussianBlur")
-      .attr("stdDeviation", "3")
+      .attr("stdDeviation", "4")
       .attr("result", "coloredBlur");
-    
+
     let feMerge = this.svg.select("#glow")
       .append("feMerge");
     
@@ -134,46 +133,49 @@ export class LineChartComponent implements OnInit {
     feMerge.append("feMergeNode")
       .attr("in", "SourceGraphic");
 
-    // Add a path for the line chart
+    // Define the line
+    this.valueline = d3.line<{ date: Date, value: number }>()
+      .x(d => this.xScale(d.date))
+      .y(d => this.yScale(d.value))
+      .curve(d3.curveMonotoneX);
+  
     this.line = this.svg.append("path")
       .datum(this.data)
       .attr("class", "chart line")
       .attr('fill', 'none')
-      .attr('stroke', colors[0])
+      .attr('stroke', this.colors[0])
       .attr('stroke-width', 2)
       .attr('d', this.valueline)
       .style("filter", "url(#glow)");
 
-    // Add the animation
-    this.totalLength = (this.line.node() as SVGPathElement).getTotalLength();
-
-    this.old_len = 0
-
+    // Update total length
+    this.totalLength = this.line.node().getTotalLength();
+  
+    // Animate line drawing
     this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
       .attr("stroke-dashoffset", this.totalLength - this.old_len)
       .transition()
       .duration(2000)
-      .ease(d3.easePolyInOut)
+      .ease(d3.easeLinear)
       .attr("stroke-dashoffset", 0);
 
-    this.old_len = this.totalLength
-
+      this.old_len = this.totalLength
+  }
+  
+  private addAxes() {
     // X-axis
     this.xAxis = this.svg.append("g")
-      .attr("class", "axis axis--x")  // Add class to the x-axis
+      .attr("class", "axis axis--x")
       .attr("transform", "translate(0," + this.height + ")")
-      .call(
-        d3.axisBottom(this.xScale)
-        .ticks(5)
-        .tickPadding(10)
-        .tickSize(10)
-        );
-
+      .call(d3.axisBottom(this.xScale).ticks(5).tickPadding(10).tickSize(10));
+  
     // Y-axis
     this.yAxis = this.svg.append("g")
-      .attr("class", "axis axis--y")  // Add class to the y-axis
+      .attr("class", "axis axis--y")
       .call(d3.axisLeft(this.yScale).ticks(5).tickPadding(10).tickSize(10));
-
+  }
+  
+  private addLabels() {
     // X-axis label
     this.svg.append("text")
       .attr("class", "x label")
@@ -181,7 +183,7 @@ export class LineChartComponent implements OnInit {
       .attr("x", this.width)
       .attr("y", this.height - 6)
       .text("Date");
-
+  
     // Y-axis label
     this.svg.append("text")
       .attr("class", "y label")
@@ -189,33 +191,36 @@ export class LineChartComponent implements OnInit {
       .attr("y", 6)
       .attr("dy", "0.5em")
       .attr("dx", "1.5em")
-      //.attr("transform", "rotate(-90)")
       .text("°C");
-
+  }
+  
+  private addTitle() {
     // Chart title
     this.svg.append("text")
       .attr("class", "chartTitle")
       .attr("x", this.width / 2)
       .attr("y", -20)
       .attr("text-anchor", "middle")
-      .text("Temerature");
-
+      .text("Temperature");
+  }
+  
+  private addLegend() {
     // Add the legend
     let legend = this.svg.selectAll(".legend")
-      .data(labels)
+      .data(this.labels)
       .enter().append("g")
       .attr("class", "legend")
       .attr("transform", (d: any, i: number) => "translate(0," + i * 20 + ")");
-
+  
     // Add the colored rectangles
     legend.append("line")
       .attr("x1", 160)
       .attr("x2", 180)
       .attr("y1", -25)
       .attr("y2", -25)
-      .attr("stroke", (d: any, i: number) => colors[i])
+      .attr("stroke", (d: any, i: number) => this.colors[i])
       .attr("stroke-width", 3);
-
+  
     // Add the labels
     legend.append("text")
       .attr("x", 150)
@@ -223,13 +228,15 @@ export class LineChartComponent implements OnInit {
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text((d: any) => d);
-
+  }
+  
+  private addTooltip() {
     this.tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
-
+  
     // Add a circle element
-
+  
     const circle = this.svg.append("circle")
       .attr("class", "dot")
       .attr("r", 0)
@@ -237,165 +244,146 @@ export class LineChartComponent implements OnInit {
       .style("stroke", "white")
       .attr("opacity", .70)
       .style("pointer-events", "none");
-      // create a listening rectangle
-
-      const listeningRect = this.svg.append("rect")
+  
+    // Create a listening rectangle
+  
+    const listeningRect = this.svg.append("rect")
       .attr("width", this.width)
       .attr("height", this.height)
       .attr("opacity", 0);
-
+  
     listeningRect.on("mousemove", (event: MouseEvent) => {
-      const [xCoord] = d3.pointer(event, this);
-      const bisectDate = d3.bisector((d:any) => d.date).left;
-      const x0 = this.xScale.invert(xCoord - 68);
-      const i = bisectDate(this.data, x0, 1);
-      const d0: any = this.data[i - 1];
-      const d1: any = this.data[i];
-      try{
-        const data = x0 - d0.date > d1.date - x0 ? d1 : d0;
-        const xPos = this.xScale(data.date);
-        const yPos = this.yScale(data.value);
-
-        // Update the circle position
-
-        circle.attr("cx", xPos)
-          .attr("cy", yPos);
-
-        // Add transition for the circle radius
-
-        if(!this.tooltip_enabled){
-          circle.transition()
-            .duration(300)
-            .attr("r", 5);
+      this.handleMouseMove(event, circle);
+    });
   
-          this.tooltip.transition()
-            .duration(300)
-            .style("opacity", .9);
-  
-            this.tooltip_enabled = true;
-        }
-
-        this.tooltip.html("Date: " + data.date.getFullYear() + "/" + data.date.getMonth() + 1 + "/" + data.date.getDate() + 
-        " " + data.date.getHours() + ":" + data.date.getMinutes() + ":" + data.date.getSeconds() +
-        "<br/>Value: " + data.value);
-        let node = this.tooltip.node()
-        if(node === null){
-          return
-        }
-        
-        let tooltipBox = node.getBoundingClientRect();
-        this.tooltip.style("left", (this.margin.left + this.xScale(data.date) + 35) + "px")
-          .style("top", (this.yScale(data.value) + tooltipBox.height/2) + "px");
-        
-      }
-      catch{
-        if(!this.tooltip_enabled){
-          return;
-        }
-        circle.transition()
-          .duration(500)
-          .attr("r", 0);
-    
-          this.tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
-
-          this.tooltip_enabled = false;
-      }
-      })
-
-      listeningRect.on("mouseout", (event: MouseEvent, d: {date: Date, value: number}) => {
-
-        if(!this.tooltip_enabled){
-          return;
-        }
-
-        circle.transition()
-          .duration(500)
-          .attr("r", 0);
-    
-          this.tooltip.transition()
-          .duration(500)
-          .style("opacity", 0);
-          
-          this.tooltip_enabled = false;
-      });
+    listeningRect.on("mouseout", (event: MouseEvent, d: {date: Date, value: number}) => {
+      this.handleMouseOut(circle);
+    });
   }
 
-  updateChart() {
-    let min_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
-    let max_time: Date = new Date(d3.max(this.data, d => d.date) ?? new Date);
-    
-    min_time.setHours(0)
-    min_time.setMinutes(0)
-    min_time.setSeconds(0)
-    min_time.setMilliseconds(0)
+  private handleMouseMove(event: MouseEvent, circle: any) {
+    const [xCoord] = d3.pointer(event, this);
+    const bisectDate = d3.bisector((d:any) => d.date).left;
+    const x0 = this.xScale.invert(xCoord - 68);
+    const i = bisectDate(this.data, x0, 1);
+    const d0: any = this.data[i - 1];
+    const d1: any = this.data[i];
+  
+    try {
+      const data = x0 - d0.date > d1.date - x0 ? d1 : d0;
+      const xPos = this.xScale(data.date);
+      const yPos = this.yScale(data.value);
+  
+      // Update the circle position
+      circle.attr("cx", xPos).attr("cy", yPos);
+  
+      // Add transition for the circle radius
+      if(!this.tooltip_enabled){
+        circle.transition()
+          .duration(300)
+          .attr("r", 5);
+  
+        this.tooltip.transition()
+          .duration(300)
+          .style("opacity", .9);
+  
+        this.tooltip_enabled = true;
+      }
+  
+      this.tooltip.html("Date: " + data.date.getFullYear() + "/" + (data.date.getMonth() + 1) + "/" + data.date.getDate() + 
+      " " + data.date.getHours() + ":" + data.date.getMinutes() + ":" + data.date.getSeconds() +
+      "<br/>Value: " + data.value);
+  
+      let node = this.tooltip.node();
+      if(node === null){
+        return;
+      }
+  
+      let tooltipBox = node.getBoundingClientRect();
+      this.tooltip.style("left", (this.margin.left + this.xScale(data.date) + 35) + "px")
+        .style("top", (this.yScale(data.value) + tooltipBox.height/2) + "px");
+    } catch {
+      if(!this.tooltip_enabled){
+        return;
+      }
+      circle.transition()
+        .duration(500)
+        .attr("r", 0);
+  
+      this.tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+  
+      this.tooltip_enabled = false;
+    }
+  }
+  
+  private handleMouseOut(circle: any) {
+    if(!this.tooltip_enabled){
+      return;
+    }
+  
+    circle.transition()
+      .duration(500)
+      .attr("r", 0);
+  
+    this.tooltip.transition()
+      .duration(500)
+      .style("opacity", 0);
+  
+    this.tooltip_enabled = false;
+  }
 
-    max_time.setHours(23)
-    max_time.setMinutes(59)
-    max_time.setSeconds(59)
-    max_time.setMilliseconds(0)
+  private updateChart() {
+    this.updateScales();
+    this.updateAxes();
+    this.updateLine();
+  }
 
-    this.xScale = d3.scaleTime()
-      //.domain(d3.extent(this.data, d => d.date) as [Date, Date])
-      .domain([
-        min_time, 
-        max_time
-      ] as [Date, Date])
-      .range([0, this.width]);
-
-    this.yScale = d3.scaleLinear()
-    .domain([
-      d3.min(this.data, d => d.value - 5), 
-      d3.max(this.data, d => d.value + 5)
-    ] as [number, number])
-    .range([this.height, 0]);
-
-    // Update axes
-    this.xAxis
-    .call(
-      d3.axisBottom(this.xScale)
-      .ticks(5)
-      .tickPadding(10)
-      .tickSize(10)
-      );
-    this.yAxis.call(d3.axisLeft(this.yScale).ticks(5).tickPadding(10).tickSize(10));
-
-    // Update the line generator
-    this.valueline = d3.line<{ date: Date, value: number }>()
-      .x(d => this.xScale(d.date))
-      .y(d => this.yScale(d.value))
-      .curve(d3.curveMonotoneX);
-
-    let line = d3.line<{ date: Date, value: number }>()
-      .x(d => this.xScale(d.date))
-      .y(d => this.yScale(d.value))
-      .curve(d3.curveMonotoneX);
-
-    // Bind the data to the line
-    const update = this.svg.selectAll(".chart.line").data([this.data]);
-
-    // Update the line
-    update.enter().append("path").merge(update).attr("d", this.valueline);
-
-    // Remove old elements as needed
-    update.exit().remove();
-
-    // Add the animation
-    this.totalLength = (this.line.node() as SVGPathElement).getTotalLength();
-
+  private updateScales() {
+    // Update X scale
+    let min_time = this.getMinTime(this.data);
+    let max_time = this.getMaxTime(this.data);
+  
+    this.xScale.domain([min_time, max_time] as [Date, Date]);
+  
+    // Update Y scale
+    this.yScale.domain([
+      Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0),
+      Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
+    ] as [number, number]);
+  }
+  
+  private updateAxes() {
+    // Update X-axis
+    this.xAxis.transition()
+      .duration(750)
+      .call(d3.axisBottom(this.xScale).ticks(5).tickPadding(10).tickSize(10));
+  
+    // Update Y-axis
+    this.yAxis.transition()
+      .duration(750)
+      .call(d3.axisLeft(this.yScale).ticks(5).tickPadding(10).tickSize(10));
+  }
+  
+  private updateLine() {
+    // Update line path
+    this.line.datum(this.data)
+      .transition()
+      .duration(750)
+      .attr("d", this.valueline);
+  
+    // Update total length
+    this.totalLength = this.line.node().getTotalLength();
+  
+    // Animate line drawing
     this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
-      .attr("stroke-dashoffset", (0))
-
-    this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
-      .attr("stroke-dashoffset", (this.totalLength - this.old_len))
+      .attr("stroke-dashoffset", this.totalLength - this.old_len)
       .transition()
       .duration(2000)
-      //.ease(d3.easeLinear)
+      .ease(d3.easeLinear)
       .attr("stroke-dashoffset", 0);
 
-      
-    this.old_len = this.totalLength
+      this.old_len = this.totalLength
   }
-
 }
