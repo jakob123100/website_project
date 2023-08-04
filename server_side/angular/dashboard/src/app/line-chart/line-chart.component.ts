@@ -28,33 +28,37 @@ export class LineChartComponent implements OnInit {
   private old_len = 0;
   private tooltip: any;
   private tooltip_enabled: boolean = false;
-
   private minY = 0
   private maxY = 0
-
-  // Define the colors for the legend
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
-
-  // Define the labels for the legend
   private labels = ["Data 1", "Data 2", "Data 3"];
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.http.get('http://217.208.66.120:7777/koltrastvägen/temp_outdoor_c/get/all')
-    .subscribe((res: any) => {
-      this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
-      this.data.reverse();
+    this.fetchData().subscribe((res: any) => {
+      this.data = this.processData(res.Response);
       this.createChart();
+      this.updateData();
+    });
+  }
 
-      interval(5000).pipe(
-        delay(5000),
-        switchMap(() => this.http.get('http://217.208.66.120:7777/koltrastvägen/temp_outdoor_c/get/all'))
-      ).subscribe((res: any) => {
-        this.data = res.Response.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]}));
-        this.data.reverse();
-        this.updateChart();
-      });
+  private fetchData(){
+    return this.http.get('http://217.208.66.120:7777/koltrastvägen/temp_outdoor_c/get/all')
+  }
+
+  private processData(rawData: [string, number][]): {date: Date, value: number}[] {
+    return rawData.map((d: [string, number]) => ({date: new Date(d[0]), value: d[1]})).reverse();
+  }
+
+  private updateData() {
+    interval(5000).pipe(
+      delay(5000),
+      switchMap(() => this.fetchData())
+    ).subscribe((res: any) => {
+      this.data = this.processData(res.Response);
+      this.updateChart();
+      console.log("asddas")
     });
   }
 
@@ -96,8 +100,9 @@ export class LineChartComponent implements OnInit {
 
     this.yScale = d3.scaleLinear()
     .domain([
-      Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0), 
-      Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
+      //Math.min(this.minY, d3.min(this.data, d => d.value - 5) ?? 0), 
+      d3.min(this.data, d => d.value - 5), 
+      d3.max(this.data, d => d.value + 5)
     ] as [number, number])
     .range([this.height, 0]);
 
@@ -341,8 +346,8 @@ export class LineChartComponent implements OnInit {
 
     this.yScale = d3.scaleLinear()
     .domain([
-      Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0), 
-      Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
+      d3.min(this.data, d => d.value - 5), 
+      d3.max(this.data, d => d.value + 5)
     ] as [number, number])
     .range([this.height, 0]);
 
