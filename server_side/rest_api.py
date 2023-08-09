@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException
 import uvicorn
 import mysql.connector
 from datetime import datetime
@@ -154,7 +154,7 @@ async def root():
     return {"tables": category_string} 
 
 @app.get("/{site}/{category}/get/{operation}")
-async def root(site: str, category: str, operation: str, json_data: dict = None):
+async def root(site: str, category: str, operation: str, startTime: str, endTime: str):
     if(not site in sites):
         return {"Response": "Site is not reconized"}
 
@@ -168,7 +168,7 @@ async def root(site: str, category: str, operation: str, json_data: dict = None)
     elif(operation == "all"):
         response = get_all_items_in_table(table_name)
     elif(operation == "between-date-time"):
-        response = get_between_date_time(table_name, time_data = json_data)
+        response = get_between_date_time(table_name, startTime, endTime)
 
 
     return({"Response": response})
@@ -193,23 +193,24 @@ def get_all_items_in_table(table_name: str):
 
     return result
 
-def get_between_date_time(table_name: str, time_data: dict):
-    start_date_time = time_data.get("start_time")
-    end_date_time = time_data.get("end_time")
+def get_between_date_time(table_name: str, startTime: str, endTime: str):
+
+    startTime = startTime[:19]
+    endTime = endTime[:19]
     
-    if(not is_valid_date_time(start_date_time)):
-        return "Invalid start time"
+    if(not is_valid_date_time(startTime)):
+        return f"Invalid start time: {startTime}"
     
-    if(not is_valid_date_time(end_date_time)):
-        return "Invalid end time"
+    if(not is_valid_date_time(endTime)):
+        return f"Invalid end time: {endTime}"
     
-    start_date_time = start_date_time.replace("T", " ")
-    end_date_time = end_date_time.replace("T", " ")
+    startTime = startTime.replace("T", " ")
+    endTime = endTime.replace("T", " ")
 
     mydb = connect_to_database()
 
     mycursor = mydb.cursor()
-    sql_command = sql_formula_get_betwen_date_time % (table_name, start_date_time, end_date_time)
+    sql_command = sql_formula_get_betwen_date_time % (table_name, startTime, endTime)
 
     mycursor.execute(sql_command)
 
