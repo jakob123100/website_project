@@ -35,6 +35,7 @@ export class LineChartComponent implements OnInit {
   private tooltip_enabled: boolean = false;
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
   private labels = ["Data 1", "Data 2", "Data 3"];
+  private lines: any[] = []
 
   constructor(private http: HttpClient) { }
 
@@ -42,7 +43,7 @@ export class LineChartComponent implements OnInit {
     //this.fetchDataForTimeframe();
 
     this.fetchDataForTimeframe().subscribe(allData => {
-      console.log(allData);
+      console.log(allData)
       this.allData = allData;
       this.createChart();
       this.updateData();
@@ -62,22 +63,18 @@ export class LineChartComponent implements OnInit {
           startTime = new Date(startDate).toISOString(); // 1 hour ago
           break;
         case 'thisDay':
-          startDate.setHours(2)
-          startDate.setMinutes(0)
-          startDate.setSeconds(0)
+          startDate.setHours(-22, 0, 0, 0)
 
           startTime = new Date(startDate).toISOString(); // 1 day ago
           break;
         // ... other timeframes
 
         default:
-          startDate.setHours(2)
-          startDate.setMinutes(0)
-          startDate.setSeconds(0)
+          startDate.setHours(-22, 0, 0, 0)
           startTime = new Date(startDate).toISOString(); // 1 day ago
           break;
     }
-
+    console.log(`start time: ${startTime}, end time: ${endTime}`)
     return this.getDataBetweenDates(startTime, endTime);
   }
 
@@ -240,13 +237,12 @@ export class LineChartComponent implements OnInit {
   
     // Animate line drawing
     this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
-      .attr("stroke-dashoffset", this.totalLength - this.old_len)
+      .attr("stroke-dashoffset", this.totalLength)
       .transition()
       .duration(2000)
       .ease(d3.easeLinear)
-      .attr("stroke-dashoffset", 0);
-
-      this.old_len = this.totalLength
+      .attr("stroke-dashoffset", 0)
+      .attr("data-old-length", this.totalLength);
   }
   
   private addAxes() {
@@ -446,6 +442,8 @@ export class LineChartComponent implements OnInit {
     // Update X scale
     let min_time = this.getMinTime(this.allData[0]);
     let max_time = this.getMaxTime(this.allData[0]);
+
+    //let currentTime = new Date(2023, 7, 9, 23, 51);
   
     this.xScale.domain([min_time, max_time] as [Date, Date]);
 
@@ -478,27 +476,43 @@ export class LineChartComponent implements OnInit {
       .call(d3.axisLeft(this.yScale).ticks(5).tickPadding(10).tickSize(10));
   }
   
+  
   private updateLine() {
     // Update each line based on its corresponding dataset
-  this.allData.forEach((dataset, index) => {
-    const lineElement = this.svg.select(".line" + index);
-    lineElement.datum(dataset)
-      .transition()
-      .duration(750)
-      .attr("d", this.valueline);
-      
-    // Update total length
-    this.totalLength = this.line.node().getTotalLength();
-  
-    // Animate line drawing
-    this.line.attr("stroke-dasharray", this.totalLength + " " + this.totalLength)
-      .attr("stroke-dashoffset", this.totalLength - this.old_len)
-      .transition()
-      .duration(2000)
-      .ease(d3.easeLinear)
-      .attr("stroke-dashoffset", 0);
 
-      this.old_len = this.totalLength
+
+    // Update each line based on its corresponding dataset
+    let lines = this.svg.selectAll(".chart.line");
+
+    this.allData.forEach((dataset, index) => {
+      let lineElement = lines.filter(function(d: any, i: number) {
+        return i === index;
+      });
+
+      // Define the line
+      let valueline = d3.line<{ date: Date, value: number }>()
+        .x(d => this.xScale(d.date))
+        .y(d => this.yScale(d.value))
+        .curve(d3.curveMonotoneX);
+
+      lineElement.datum(dataset)
+        .transition("line")
+        .attr("d", valueline);
+    
+        
+      // Update total length
+      let totalLength = lineElement.node().getTotalLength();
+      
+      let oldLength = lineElement.attr("data-old-length");
+
+      // Animate line drawing
+      lineElement.attr("stroke-dasharray", totalLength + " " + totalLength)
+        .attr("stroke-dashoffset", totalLength - oldLength)
+        .transition()
+        .duration(2000)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0)
+        .attr("data-old-length", totalLength);
     });
   
   }   
