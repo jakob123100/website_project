@@ -65,7 +65,7 @@
       "configurations": {
         "production": {
           "browserTarget": "dashboard:build:production",
-          "host": "192.168.1.158",
+          "host": "192.168.0.103",
           "port": 8808,
           "liveReload": true
         },

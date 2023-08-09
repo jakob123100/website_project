@@ -1,5 +1,5 @@
 import { ViewEncapsulation } from '@angular/core';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import * as d3 from 'd3';
 import { HttpClient } from '@angular/common/http';
 import { interval } from 'rxjs';
@@ -13,6 +13,10 @@ import { delay, startWith, switchMap } from 'rxjs/operators';
 })
 
 export class LineChartComponent implements OnInit {
+  @Input() site!: string;
+  @Input() category!: string;
+  @Input() timeframe!: string; // E.g., "lastHour", "lastDay"
+
   private data: {date: Date, value: number}[] = [];
   private svg: any;
   private margin = {top: 50, right: 40, bottom: 60, left: 60};
@@ -28,19 +32,62 @@ export class LineChartComponent implements OnInit {
   private old_len = 0;
   private tooltip: any;
   private tooltip_enabled: boolean = false;
-  private minY = 0
-  private maxY = 0
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
   private labels = ["Data 1", "Data 2", "Data 3"];
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.fetchData().subscribe((res: any) => {
+    //this.fetchDataForTimeframe();
+
+    this.fetchDataForTimeframe().subscribe((res: any) => {
       this.data = this.processData(res.Response);
       this.createChart();
       this.updateData();
     });
+  }
+
+  fetchDataForTimeframe() {
+    let currentTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    let startDate: Date = new Date(currentTime);
+    let startTime: string;
+    let endTime: string = new Date(currentTime).toISOString();
+
+    switch (this.timeframe) {
+        case 'lastHour':
+          startDate.setHours(currentTime.getHours() - 1)
+
+          startTime = new Date(startDate).toISOString(); // 1 hour ago
+          break;
+        case 'thisDay':
+          startDate.setHours(2)
+          startDate.setMinutes(0)
+          startDate.setSeconds(0)
+
+          startTime = new Date(startDate).toISOString(); // 1 day ago
+          break;
+        // ... other timeframes
+
+        default:
+          startDate.setHours(2)
+          startDate.setMinutes(0)
+          startDate.setSeconds(0)
+          startTime = new Date(startDate).toISOString(); // 1 day ago
+          break;
+    }
+
+    // Construct the API endpoint
+    const apiUrl = `http://217.208.66.120:7777/${this.site}/${this.category}/get/between-date-time`;
+    
+    //console.log("start time: " + startTime + ", end time: " + endTime)
+    // Make the HTTP request
+    return this.http.get(apiUrl, {
+        params: {
+            startTime: startTime,
+            endTime: endTime
+        }
+    })
+
   }
 
   private fetchData(){
@@ -53,16 +100,15 @@ export class LineChartComponent implements OnInit {
 
   private updateData() {
     interval(5000).pipe(
-      switchMap(() => this.fetchData())
+      switchMap(() => this.fetchDataForTimeframe())
     ).subscribe((res: any) => {
       this.data = this.processData(res.Response);
       this.updateChart();
-      console.log("asddas")
     });
   }
 
   private createChart() {
-    this.initializeSvg();
+    this.initializeSvg();  
     this.createScales();
     this.createLine();
     this.addAxes();
@@ -90,17 +136,17 @@ export class LineChartComponent implements OnInit {
       .domain([min_time, max_time] as [Date, Date])
       .range([0, this.width]);
   
-    // Y scale
+    // Y scale v
     this.yScale = d3.scaleLinear()
       .domain([
-        Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0),
-        Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
+        d3.min(this.data, d => d.value - 5),
+        d3.max(this.data, d => d.value + 5)
       ] as [number, number])
       .range([this.height, 0]);
   }
   
   private getMinTime(data: {date: Date, value: number}[]): Date {
-    let min_time: Date = new Date(d3.min(data, d => d.date) ?? new Date);
+    let min_time: Date = new Date(d3.max(data, d => d.date) ?? new Date);
     min_time.setHours(0);
     min_time.setMinutes(0);
     min_time.setSeconds(0);
@@ -349,8 +395,8 @@ export class LineChartComponent implements OnInit {
   
     // Update Y scale
     this.yScale.domain([
-      Math.min(this.minY, d3.min(this.data, d => d.value) ?? 0),
-      Math.max(this.maxY, d3.max(this.data, d => d.value + 5) ?? 0)
+      d3.min(this.data, d => d.value - 5),
+      d3.max(this.data, d => d.value + 5)
     ] as [number, number]);
   }
   
