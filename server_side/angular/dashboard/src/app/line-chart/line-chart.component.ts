@@ -79,12 +79,6 @@ export class LineChartComponent implements OnInit {
     }
 
     return this.getDataBetweenDates(startTime, endTime);
-
-    this.getDataBetweenDates(startTime, endTime).subscribe(allData => {
-      console.log(allData);
-      return allData;
-      // Do any additional processing here if needed
-    });
   }
 
   getDataBetweenDates(startTime: string, endTime: string): Observable<any[]> {
@@ -133,7 +127,6 @@ export class LineChartComponent implements OnInit {
     ).subscribe(allData => {
       this.allData = allData;
       this.updateChart();
-      console.log("asdasd");
     });
   }
 
@@ -163,21 +156,29 @@ export class LineChartComponent implements OnInit {
   }
   
   private createScales() {
-    let data = this.allData[0]
-    console.log(data)
     // X scale
-    let min_time = this.getMinTime(data);
-    let max_time = this.getMaxTime(data);
+    let min_time = this.getMinTime(this.allData[0]);
+    let max_time = this.getMaxTime(this.allData[0]);
   
     this.xScale = d3.scaleTime()
       .domain([min_time, max_time] as [Date, Date])
       .range([0, this.width]);
   
-    // Y scale v
+    // Y scale
+    let globalMinValue = Infinity;
+    let globalMaxValue = -Infinity;
+
+    this.allData.forEach(data => {
+      let currentMin = d3.min(data, d => d.value - 5);
+      let currentMax = d3.max(data, d => d.value + 5);
+      globalMinValue = Math.min(globalMinValue, currentMin != undefined ? currentMin : Infinity)
+      globalMaxValue = Math.max(globalMaxValue, currentMax != undefined ? currentMax : -Infinity)
+    });
+
     this.yScale = d3.scaleLinear()
       .domain([
-        d3.min(data, d => d.value - 5),
-        d3.max(data, d => d.value + 5)
+        globalMinValue,
+        globalMaxValue
       ] as [number, number])
       .range([this.height, 0]);
   }
@@ -362,7 +363,7 @@ export class LineChartComponent implements OnInit {
       const d = (d1 && d0) ? (x0.getTime() - d0.date.getTime() > d1.date.getTime() - x0.getTime() ? d1 : d0) : null;
 
       if (d) {
-        const distance = Math.abs(this.xScale(d.date) - d3.pointer(event)[0]);
+        const distance = Math.abs(this.yScale(d.value) - d3.pointer(event)[1]);
         if (distance < closestDistance) {
           closestDistance = distance;
           closestDataPoint = d;
@@ -441,18 +442,27 @@ export class LineChartComponent implements OnInit {
   }
 
   private updateScales() {
-    let data = this.allData[0]
 
     // Update X scale
-    let min_time = this.getMinTime(data);
-    let max_time = this.getMaxTime(data);
+    let min_time = this.getMinTime(this.allData[0]);
+    let max_time = this.getMaxTime(this.allData[0]);
   
     this.xScale.domain([min_time, max_time] as [Date, Date]);
-  
+
+    let globalMinValue = Infinity;
+    let globalMaxValue = -Infinity;
+
+    this.allData.forEach(data => {
+      let currentMin = d3.min(data, d => d.value - 5);
+      let currentMax = d3.max(data, d => d.value + 5);
+      globalMinValue = Math.min(globalMinValue, currentMin != undefined ? currentMin : Infinity)
+      globalMaxValue = Math.max(globalMaxValue, currentMax != undefined ? currentMax : -Infinity)
+    });
+
     // Update Y scale
     this.yScale.domain([
-      d3.min(data, d => d.value - 5),
-      d3.max(data, d => d.value + 5)
+      globalMinValue,
+      globalMaxValue
     ] as [number, number]);
   }
   
