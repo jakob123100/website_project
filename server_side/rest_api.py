@@ -155,7 +155,7 @@ async def root():
     return {"tables": category_string} 
 
 @app.get("/{site}/{category}/get/{operation}")
-async def root(site: str, category: str, operation: str, startTime: str, endTime: str):
+async def root(site: str, category: str, operation: str, startTime: str = None, endTime: str = None):
     if(not site in sites):
         return {"Response": "Site is not reconized"}
 
@@ -295,13 +295,6 @@ def connect_to_database(database_name: str = "koltrast_15_data"):
     return database
 
 def cleanup_database():
-    # Current time
-    now = datetime.now()
-    
-    # Time windows based on user's requirements
-    one_day_ago = now - timedelta(days=1)
-    one_month_ago = now - timedelta(days=30)
-    
     # Connect to the database
     mydb = connect_to_database()
     mycursor = mydb.cursor()
@@ -311,40 +304,37 @@ def cleanup_database():
         for category in categories:
             table_name = f"{site}_{category}"
             
-            # 1 entry every 10 seconds by default: No cleanup needed
-            
-            # 1 entry every minute after a day
+            # Step 1: Select all the timestamps we want to keep based on your criteria
             sql_command = f"""
-            DELETE FROM {table_name}
-            WHERE TIMESTAMPDIFF(SECOND, date_time, NOW()) BETWEEN 0 AND 86400
-            AND MOD(TIMESTAMPDIFF(SECOND, date_time, NOW()), 60) != 0;
+            SELECT date_time FROM {table_name} WHERE
+            (TIMESTAMPDIFF(SECOND, date_time, NOW()) BETWEEN 0 AND 86400)
+            OR
+            (TIMESTAMPDIFF(SECOND, date_time, NOW()) BETWEEN 86400 AND 2592000 AND MINUTE(date_time) % 5 = 0 AND SECOND(date_time) BETWEEN 0 AND 10)
+            OR
+            (TIMESTAMPDIFF(SECOND, date_time, NOW()) > 2592000 AND MINUTE(date_time) = 0 AND SECOND(date_time) BETWEEN 0 AND 10);
             """
             mycursor.execute(sql_command)
+            timestamps_to_keep = [row[0] for row in mycursor.fetchall()]
             
-            # 1 entry every 5 minutes after a month
-            sql_command = f"""
-            DELETE FROM {table_name}
-            WHERE TIMESTAMPDIFF(SECOND, date_time, NOW()) BETWEEN 86400 AND 2592000
-            AND MOD(TIMESTAMPDIFF(SECOND, date_time, NOW()), 300) != 0;
-            """
-            mycursor.execute(sql_command)
-            
-            # 1 entry every hour after a month
-            sql_command = f"""
-            DELETE FROM {table_name}
-            WHERE TIMESTAMPDIFF(SECOND, date_time, NOW()) > 2592000
-            AND MOD(TIMESTAMPDIFF(SECOND, date_time, NOW()), 3600) != 0;
-            """
-            mycursor.execute(sql_command)
+            # Only execute the delete statement if there are timestamps to keep
+            if timestamps_to_keep:
+                timestamps_placeholder = ",".join(["%s"] * len(timestamps_to_keep))
+                sql_command = f"""
+                DELETE FROM {table_name} WHERE date_time NOT IN ({timestamps_placeholder});
+                """
+                mycursor.execute(sql_command, timestamps_to_keep)
             
     # Commit the changes to the database
     mydb.commit()
-    
-    return {"Message": "Database cleaned up as per requirements"}
+
+    return {"Message": "Database cleanup"}
 
 @app.get("/cleanup")
 async def api_cleanup_database():
-    return cleanup_database()
+    try:
+        return cleanup_database()
+    except Exception as e:
+        return {"error": e}
 
 """
 for category in categories:
