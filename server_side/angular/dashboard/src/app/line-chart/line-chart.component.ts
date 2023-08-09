@@ -30,20 +30,23 @@ export class LineChartComponent implements OnInit {
   private line: any;
   private valueline: any;
   private totalLength = 0;
-  private old_len = 0;
   private tooltip: any;
   private tooltip_enabled: boolean = false;
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
   private labels = ["Data 1", "Data 2", "Data 3"];
-  private lines: any[] = []
+  private startDate: Date = new Date();
+  private endDate: Date = new Date();
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    //this.fetchDataForTimeframe();
+    this.setDates();
+    this.labels = []
+    this.dataSources.forEach(dataSource => {
+      this.labels.push(dataSource.label.toString())
+    });
 
     this.fetchDataForTimeframe().subscribe(allData => {
-      console.log(allData)
       this.allData = allData;
       this.createChart();
       this.updateData();
@@ -51,31 +54,52 @@ export class LineChartComponent implements OnInit {
   }
 
   fetchDataForTimeframe() {
+    this.setDates();
+
+    let startTime: string = this.startDate.toISOString();
+    let endTime: string = this.endDate.toISOString();
+
+    console.log(`start time: ${startTime}, end time: ${endTime}`)
+
+    return this.getDataBetweenDates(startTime, endTime);
+  }
+
+  setDates(){
     let currentTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    let startDate: Date = new Date(currentTime);
-    let startTime: string;
-    let endTime: string = new Date(currentTime).toISOString();
+    this.startDate = new Date(currentTime);
+    this.endDate = new Date(currentTime);
+    this.endDate.setHours(2, 0, 0, 0)
+    this.endDate.setUTCDate(currentTime.getUTCDate() + 1);
 
     switch (this.timeframe) {
         case 'lastHour':
-          startDate.setHours(currentTime.getHours() - 1)
-
-          startTime = new Date(startDate).toISOString(); // 1 hour ago
+          this.startDate.setHours(currentTime.getHours() - 1);
           break;
         case 'thisDay':
-          startDate.setHours(-22, 0, 0, 0)
-
-          startTime = new Date(startDate).toISOString(); // 1 day ago
+          this.startDate.setHours(2, 0, 0, 0);
+          this.startDate.setUTCDate(currentTime.getUTCDate());
           break;
+        case 'thisWeek':
+          this.startDate.setHours(2, 0, 0, 0)
+          this.startDate.setUTCDate(currentTime.getUTCDate() - 7);
+          break;
+        case 'thisMonth':
+          this.startDate.setHours(2, 0, 0, 0);
+          this.startDate.setUTCDate(currentTime.getUTCDate());
+          this.startDate.setUTCMonth(currentTime.getUTCMonth() - 1);
+          break;
+        case 'thisYear':
+          this.startDate.setHours(2, 0, 0, 0);
+          this.startDate.setUTCDate(currentTime.getUTCDate());
+          this.startDate.setUTCFullYear(currentTime.getUTCFullYear() - 1);
+        break;
         // ... other timeframes
 
         default:
-          startDate.setHours(-22, 0, 0, 0)
-          startTime = new Date(startDate).toISOString(); // 1 day ago
+          this.startDate.setHours(2, 0, 0, 0)
+          this.startDate.setUTCDate(currentTime.getUTCDate())
           break;
     }
-    console.log(`start time: ${startTime}, end time: ${endTime}`)
-    return this.getDataBetweenDates(startTime, endTime);
   }
 
   getDataBetweenDates(startTime: string, endTime: string): Observable<any[]> {
@@ -158,7 +182,7 @@ export class LineChartComponent implements OnInit {
     let max_time = this.getMaxTime(this.allData[0]);
   
     this.xScale = d3.scaleTime()
-      .domain([min_time, max_time] as [Date, Date])
+      .domain([new Date(this.startDate.getTime() - 2 * 60 * 60 * 1000), new Date(this.endDate.getTime() - 2 * 60 * 60 * 1000)] as [Date, Date])
       .range([0, this.width]);
   
     // Y scale
@@ -445,7 +469,7 @@ export class LineChartComponent implements OnInit {
 
     //let currentTime = new Date(2023, 7, 9, 23, 51);
   
-    this.xScale.domain([min_time, max_time] as [Date, Date]);
+    this.xScale.domain([new Date(this.startDate.getTime() - 2 * 60 * 60 * 1000), new Date(this.endDate.getTime() - 2 * 60 * 60 * 1000)] as [Date, Date])
 
     let globalMinValue = Infinity;
     let globalMaxValue = -Infinity;

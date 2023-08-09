@@ -1,10 +1,9 @@
 <app-line-chart 
     [dataSources]="[
-        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Temp Outdoor' },
-        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Temp Indoor' },
-        { site: 'koltrastvägen', category: 'temp_heatpump_out_c', label: 'Temp Heatpump Out' },
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
     ]" 
-    [timeframe]="'thisDay'">
+    [timeframe]="'thisHour'">
 </app-line-chart>
 
 <!--
