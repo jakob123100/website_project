@@ -293,6 +293,57 @@ def connect_to_database(database_name: str = "koltrast_15_data"):
 
     return database
 
+def cleanup_database():
+    # Current time
+    now = datetime.now()
+    
+    # Time windows based on user's requirements
+    one_day_ago = now - timedelta(days=1)
+    one_month_ago = now - timedelta(days=30)
+    
+    # Connect to the database
+    mydb = connect_to_database()
+    mycursor = mydb.cursor()
+    
+    # For each site and category
+    for site in sites:
+        for category in categories:
+            table_name = f"{site}_{category}"
+            
+            # 1 entry every 10 seconds by default: No cleanup needed
+            
+            # 1 entry every minute after a day
+            sql_command = f"""
+            DELETE FROM {table_name}
+            WHERE TIMESTAMPDIFF(SECOND, date_time, NOW()) BETWEEN 0 AND 86400
+            AND MOD(TIMESTAMPDIFF(SECOND, date_time, NOW()), 60) != 0;
+            """
+            mycursor.execute(sql_command)
+            
+            # 1 entry every 5 minutes after a month
+            sql_command = f"""
+            DELETE FROM {table_name}
+            WHERE TIMESTAMPDIFF(SECOND, date_time, NOW()) BETWEEN 86400 AND 2592000
+            AND MOD(TIMESTAMPDIFF(SECOND, date_time, NOW()), 300) != 0;
+            """
+            mycursor.execute(sql_command)
+            
+            # 1 entry every hour after a month
+            sql_command = f"""
+            DELETE FROM {table_name}
+            WHERE TIMESTAMPDIFF(SECOND, date_time, NOW()) > 2592000
+            AND MOD(TIMESTAMPDIFF(SECOND, date_time, NOW()), 3600) != 0;
+            """
+            mycursor.execute(sql_command)
+            
+    # Commit the changes to the database
+    mydb.commit()
+    
+    return {"Message": "Database cleaned up as per requirements"}
+
+@app.get("/cleanup")
+async def api_cleanup_database():
+    return cleanup_database()
 
 """
 for category in categories:
