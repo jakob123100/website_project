@@ -1,5 +1,9 @@
-<app-line-chart [site]="'koltrastvägen'" [category]="'temp_outdoor_c'" [timeframe]="'thisDay'">
-
+<app-line-chart 
+    [dataSources]="[
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Temp Outdoor' },
+        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Temp Outdoor' },
+    ]" 
+    [timeframe]="'thisDay'">
 </app-line-chart>
 
 <!--

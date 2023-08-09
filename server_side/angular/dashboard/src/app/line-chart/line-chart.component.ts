@@ -2,8 +2,8 @@ import { ViewEncapsulation } from '@angular/core';
 import { Component, OnInit, Input } from '@angular/core';
 import * as d3 from 'd3';
 import { HttpClient } from '@angular/common/http';
-import { interval } from 'rxjs';
-import { delay, startWith, switchMap } from 'rxjs/operators';
+import { interval, forkJoin, Observable } from 'rxjs';
+import { delay, map, startWith, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-line-chart',
@@ -13,11 +13,12 @@ import { delay, startWith, switchMap } from 'rxjs/operators';
 })
 
 export class LineChartComponent implements OnInit {
-  @Input() site!: string;
-  @Input() category!: string;
+  //@Input() site!: string;
+  //@Input() category!: string;
+  @Input() dataSources: { site: string, category: string, label: string }[] = [];
   @Input() timeframe!: string; // E.g., "lastHour", "lastDay"
 
-  private data: {date: Date, value: number}[] = [];
+  private allData: {date: Date, value: number}[][] = [];
   private svg: any;
   private margin = {top: 50, right: 40, bottom: 60, left: 60};
   private width = 960 - this.margin.left - this.margin.right;
@@ -40,8 +41,9 @@ export class LineChartComponent implements OnInit {
   ngOnInit() {
     //this.fetchDataForTimeframe();
 
-    this.fetchDataForTimeframe().subscribe((res: any) => {
-      this.data = this.processData(res.Response);
+    this.fetchDataForTimeframe().subscribe(allData => {
+      console.log(allData);
+      this.allData = allData;
       this.createChart();
       this.updateData();
     });
@@ -76,18 +78,43 @@ export class LineChartComponent implements OnInit {
           break;
     }
 
-    // Construct the API endpoint
-    const apiUrl = `http://217.208.66.120:7777/${this.site}/${this.category}/get/between-date-time`;
-    
-    //console.log("start time: " + startTime + ", end time: " + endTime)
-    // Make the HTTP request
-    return this.http.get(apiUrl, {
-        params: {
-            startTime: startTime,
-            endTime: endTime
-        }
-    })
+    return this.getDataBetweenDates(startTime, endTime);
 
+    this.getDataBetweenDates(startTime, endTime).subscribe(allData => {
+      console.log(allData);
+      return allData;
+      // Do any additional processing here if needed
+    });
+  }
+
+  getDataBetweenDates(startTime: string, endTime: string): Observable<any[]> {
+    // Create an array to hold our observables
+    let observables: Observable<any>[] = [];
+  
+    this.dataSources.forEach(dataSource => {
+      // Construct the API endpoint
+      const apiUrl = `http://217.208.66.120:7777/${dataSource.site}/${dataSource.category}/get/between-date-time`;
+  
+      // Push the Observable into our array
+      observables.push(this.http.get(apiUrl, {
+        params: {
+          startTime: startTime,
+          endTime: endTime
+        }
+      }));
+    });
+  
+    // Use forkJoin to wait for all the Observables to complete
+    return forkJoin(observables).pipe(
+      map((responses: any[]) => {
+        let allData: any = [];
+        responses.forEach(res => {
+          let processedData = this.processData(res.Response);
+          allData.push(processedData);
+        });
+        return allData;
+      })
+    );
   }
 
   private fetchData(){
@@ -99,18 +126,26 @@ export class LineChartComponent implements OnInit {
   }
 
   private updateData() {
+    // Start an interval that emits every 5 seconds
     interval(5000).pipe(
+      // For each emission from the interval, switch to fetching the data
       switchMap(() => this.fetchDataForTimeframe())
-    ).subscribe((res: any) => {
-      this.data = this.processData(res.Response);
+    ).subscribe(allData => {
+      this.allData = allData;
       this.updateChart();
+      console.log("asdasd");
     });
   }
 
   private createChart() {
     this.initializeSvg();  
     this.createScales();
-    this.createLine();
+    
+    // Create a line for each dataset
+    this.allData.forEach((dataset, index) => {
+      this.createLine(dataset, index);
+    });
+
     this.addAxes();
     this.addLabels();
     this.addTitle();
@@ -128,9 +163,11 @@ export class LineChartComponent implements OnInit {
   }
   
   private createScales() {
+    let data = this.allData[0]
+    console.log(data)
     // X scale
-    let min_time = this.getMinTime(this.data);
-    let max_time = this.getMaxTime(this.data);
+    let min_time = this.getMinTime(data);
+    let max_time = this.getMaxTime(data);
   
     this.xScale = d3.scaleTime()
       .domain([min_time, max_time] as [Date, Date])
@@ -139,8 +176,8 @@ export class LineChartComponent implements OnInit {
     // Y scale v
     this.yScale = d3.scaleLinear()
       .domain([
-        d3.min(this.data, d => d.value - 5),
-        d3.max(this.data, d => d.value + 5)
+        d3.min(data, d => d.value - 5),
+        d3.max(data, d => d.value + 5)
       ] as [number, number])
       .range([this.height, 0]);
   }
@@ -163,7 +200,7 @@ export class LineChartComponent implements OnInit {
     return max_time;
   }
   
-  private createLine() {
+  private createLine(dataset: { date: Date, value: number }[], index: number) {
     this.svg.append("defs")
       .append("filter")
       .attr("id", "glow")
@@ -185,11 +222,14 @@ export class LineChartComponent implements OnInit {
       .y(d => this.yScale(d.value))
       .curve(d3.curveMonotoneX);
   
+    // Use the index to determine the line's color from the colors array
+    const lineColor = this.colors[index % this.colors.length];
+
     this.line = this.svg.append("path")
-      .datum(this.data)
+      .datum(dataset)
       .attr("class", "chart line")
       .attr('fill', 'none')
-      .attr('stroke', this.colors[0])
+      .attr('stroke', lineColor)
       .attr('stroke-width', 2)
       .attr('d', this.valueline)
       .style("filter", "url(#glow)");
@@ -308,47 +348,30 @@ export class LineChartComponent implements OnInit {
   }
 
   private handleMouseMove(event: MouseEvent, circle: any) {
-    const [xCoord] = d3.pointer(event, this);
-    const bisectDate = d3.bisector((d:any) => d.date).left;
-    const x0 = this.xScale.invert(xCoord - 68);
-    const i = bisectDate(this.data, x0, 1);
-    const d0: any = this.data[i - 1];
-    const d1: any = this.data[i];
-  
-    try {
-      const data = x0 - d0.date > d1.date - x0 ? d1 : d0;
-      const xPos = this.xScale(data.date);
-      const yPos = this.yScale(data.value);
-  
-      // Update the circle position
-      circle.attr("cx", xPos).attr("cy", yPos);
-  
-      // Add transition for the circle radius
-      if(!this.tooltip_enabled){
-        circle.transition()
-          .duration(300)
-          .attr("r", 5);
-  
-        this.tooltip.transition()
-          .duration(300)
-          .style("opacity", .9);
-  
-        this.tooltip_enabled = true;
+    // Find the closest data point from any line
+    let closestDataPoint: { date: Date, value: number | undefined } = { date: new Date, value: undefined };
+    let closestDistance = Infinity;
+    let closestDatasetIndex = -1;
+    
+    this.allData.forEach((dataset, index) => {
+      const bisect = d3.bisector((d: any) => d.date).left;
+      const x0 = this.xScale.invert(d3.pointer(event)[0]);
+      const i = bisect(dataset, x0, 1);
+      const d0 = dataset[i - 1];
+      const d1 = dataset[i];
+      const d = (d1 && d0) ? (x0.getTime() - d0.date.getTime() > d1.date.getTime() - x0.getTime() ? d1 : d0) : null;
+
+      if (d) {
+        const distance = Math.abs(this.xScale(d.date) - d3.pointer(event)[0]);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestDataPoint = d;
+          closestDatasetIndex = index;
+        }
       }
-  
-      this.tooltip.html("Date: " + data.date.getFullYear() + "/" + (data.date.getMonth() + 1) + "/" + data.date.getDate() + 
-      " " + data.date.getHours() + ":" + data.date.getMinutes() + ":" + data.date.getSeconds() +
-      "<br/>Value: " + data.value);
-  
-      let node = this.tooltip.node();
-      if(node === null){
-        return;
-      }
-  
-      let tooltipBox = node.getBoundingClientRect();
-      this.tooltip.style("left", (this.margin.left + this.xScale(data.date) + 35) + "px")
-        .style("top", (this.yScale(data.value) + tooltipBox.height/2) + "px");
-    } catch {
+    });
+
+    if(closestDataPoint.value == undefined){
       if(!this.tooltip_enabled){
         return;
       }
@@ -361,8 +384,39 @@ export class LineChartComponent implements OnInit {
         .style("opacity", 0);
   
       this.tooltip_enabled = false;
+
+      return;
     }
-  }
+  
+    const xPos = this.xScale(closestDataPoint.date);
+    const yPos = this.yScale(closestDataPoint.value);
+
+    // Update the circle position
+    circle.attr("cx", xPos).attr("cy", yPos);
+
+    // Add transition for the circle radius
+    if(!this.tooltip_enabled){
+      circle.transition()
+        .duration(300)
+        .attr("r", 5);
+
+      this.tooltip.transition()
+        .duration(300)
+        .style("opacity", .9);
+
+      this.tooltip_enabled = true;
+    }
+
+    this.tooltip.html("Date: " + closestDataPoint.date.getFullYear() + "/" + (closestDataPoint.date.getMonth() + 1) + "/" + closestDataPoint.date.getDate() + 
+    " " + closestDataPoint.date.getHours() + ":" + closestDataPoint.date.getMinutes() + ":" + closestDataPoint.date.getSeconds() +
+    "<br/>Value: " + closestDataPoint.value);
+
+    let node = this.tooltip.node();
+
+    let tooltipBox = node.getBoundingClientRect();
+    this.tooltip.style("left", (this.margin.left + this.xScale(closestDataPoint.date) + 35) + "px")
+      .style("top", (this.yScale(closestDataPoint.value) + tooltipBox.height/2) + "px");
+    }
   
   private handleMouseOut(circle: any) {
     if(!this.tooltip_enabled){
@@ -387,16 +441,18 @@ export class LineChartComponent implements OnInit {
   }
 
   private updateScales() {
+    let data = this.allData[0]
+
     // Update X scale
-    let min_time = this.getMinTime(this.data);
-    let max_time = this.getMaxTime(this.data);
+    let min_time = this.getMinTime(data);
+    let max_time = this.getMaxTime(data);
   
     this.xScale.domain([min_time, max_time] as [Date, Date]);
   
     // Update Y scale
     this.yScale.domain([
-      d3.min(this.data, d => d.value - 5),
-      d3.max(this.data, d => d.value + 5)
+      d3.min(data, d => d.value - 5),
+      d3.max(data, d => d.value + 5)
     ] as [number, number]);
   }
   
@@ -413,12 +469,14 @@ export class LineChartComponent implements OnInit {
   }
   
   private updateLine() {
-    // Update line path
-    this.line.datum(this.data)
+    // Update each line based on its corresponding dataset
+  this.allData.forEach((dataset, index) => {
+    const lineElement = this.svg.select(".line" + index);
+    lineElement.datum(dataset)
       .transition()
       .duration(750)
       .attr("d", this.valueline);
-  
+      
     // Update total length
     this.totalLength = this.line.node().getTotalLength();
   
@@ -431,5 +489,7 @@ export class LineChartComponent implements OnInit {
       .attr("stroke-dashoffset", 0);
 
       this.old_len = this.totalLength
-  }
+    });
+  
+  }   
 }
