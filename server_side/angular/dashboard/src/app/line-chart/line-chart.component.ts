@@ -13,8 +13,8 @@ import { delay, map, startWith, switchMap } from 'rxjs/operators';
 })
 
 export class LineChartComponent implements OnInit {
-  //@Input() site!: string;
-  //@Input() category!: string;
+  @Input() chartTitle!: string; // E.g., "lastHour", "lastDay"
+  @Input() labels!: { yAxis: string, xAxis: string}; // E.g., "lastHour", "lastDay"
   @Input() dataSources: { site: string, category: string, label: string }[] = [];
   @Input() timeframe!: string; // E.g., "lastHour", "lastDay"
 
@@ -33,7 +33,7 @@ export class LineChartComponent implements OnInit {
   private tooltip: any;
   private tooltip_enabled: boolean = false;
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
-  private labels = ["Data 1", "Data 2", "Data 3"];
+  private legends = ["Data 1", "Data 2", "Data 3"];
   private startDate: Date = new Date();
   private endDate: Date = new Date();
 
@@ -41,9 +41,9 @@ export class LineChartComponent implements OnInit {
 
   ngOnInit() {
     this.setDates();
-    this.labels = []
+    this.legends = []
     this.dataSources.forEach(dataSource => {
-      this.labels.push(dataSource.label.toString())
+      this.legends.push(dataSource.label.toString())
     });
 
     this.fetchDataForTimeframe().subscribe(allData => {
@@ -73,7 +73,8 @@ export class LineChartComponent implements OnInit {
 
     switch (this.timeframe) {
         case 'lastHour':
-          this.startDate.setHours(currentTime.getHours() - 1);
+          this.startDate = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000);
+          this.endDate = new Date(currentTime.getTime());
           break;
         case 'thisDay':
           this.startDate.setHours(2, 0, 0, 0);
@@ -264,7 +265,7 @@ export class LineChartComponent implements OnInit {
       .attr("stroke-dashoffset", this.totalLength)
       .transition()
       .duration(2000)
-      .ease(d3.easeLinear)
+      .ease(d3.easeSinInOut)
       .attr("stroke-dashoffset", 0)
       .attr("data-old-length", this.totalLength);
   }
@@ -289,7 +290,7 @@ export class LineChartComponent implements OnInit {
       .attr("text-anchor", "end")
       .attr("x", this.width)
       .attr("y", this.height - 6)
-      .text("Date");
+      .text(this.labels.xAxis);
   
     // Y-axis label
     this.svg.append("text")
@@ -298,7 +299,7 @@ export class LineChartComponent implements OnInit {
       .attr("y", 6)
       .attr("dy", "0.5em")
       .attr("dx", "1.5em")
-      .text("°C");
+      .text(this.labels.yAxis);
   }
   
   private addTitle() {
@@ -308,13 +309,13 @@ export class LineChartComponent implements OnInit {
       .attr("x", this.width / 2)
       .attr("y", -20)
       .attr("text-anchor", "middle")
-      .text("Temperature");
+      .text(this.chartTitle);
   }
   
   private addLegend() {
     // Add the legend
     let legend = this.svg.selectAll(".legend")
-      .data(this.labels)
+      .data(this.legends)
       .enter().append("g")
       .attr("class", "legend")
       .attr("transform", (d: any, i: number) => "translate(0," + i * 20 + ")");

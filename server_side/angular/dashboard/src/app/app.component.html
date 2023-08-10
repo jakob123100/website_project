@@ -1,9 +1,11 @@
 <app-line-chart 
+    [chartTitle]="'Temperature'"
+    [labels]="{ yAxis: '°C', xAxis: 'Time'}"
     [dataSources]="[
         { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
         { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
     ]" 
-    [timeframe]="'thisHour'">
+    [timeframe]="'lastHour'">
 </app-line-chart>
 
 <!--
