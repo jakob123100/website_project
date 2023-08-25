@@ -39,7 +39,7 @@ base_dir ='/sys/bus/w1/devices/'
 from Adafruit_IO import Client, Feed, Data, RequestError
 import datetime
 
-ADAFRUIT_IO_KEY = 'aio_EUvr21JcIxhD0jXnpuwAkdMM9DYj'
+ADAFRUIT_IO_KEY = 'aio_BwgL41bf0z0izHIoEqA26UTQE8Hy'
 ADAFRUIT_IO_USERNAME = 'Zalongou'
 
 # Create an instance of the REST client.
