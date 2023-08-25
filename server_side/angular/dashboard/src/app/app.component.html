@@ -1,10 +1,38 @@
+
+
+
+
 <app-line-chart 
+    [chartTitle]="'Temperature Last Hour'"
+    [labels]="{ yAxis: '°C', xAxis: 'Time'}"
     [dataSources]="[
-        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
         { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
     ]" 
-    [timeframe]="'thisHour'">
+    [timeframe]="'lastHour'">
 </app-line-chart>
+
+<app-line-chart 
+    [chartTitle]="'Temperature This Day'"
+    [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+    [dataSources]="[
+        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+    ]" 
+    [timeframe]="'thisDay'">
+</app-line-chart>
+
+<app-line-chart 
+    [chartTitle]="'Temperature Last Week'"
+    [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+    [dataSources]="[
+        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+    ]" 
+    [timeframe]="'thisWeek'">
+</app-line-chart>
+
+
 
 <!--
 <app-help>

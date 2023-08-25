@@ -6,6 +6,7 @@ body {
 }
 
 .plot{
+    position: relative;
     background: #191c24;
     border-radius: 10px;
 }

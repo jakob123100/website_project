@@ -13,8 +13,8 @@ import { delay, map, startWith, switchMap } from 'rxjs/operators';
 })
 
 export class LineChartComponent implements OnInit {
-  //@Input() site!: string;
-  //@Input() category!: string;
+  @Input() chartTitle!: string; // E.g., "lastHour", "lastDay"
+  @Input() labels!: { yAxis: string, xAxis: string}; // E.g., "lastHour", "lastDay"
   @Input() dataSources: { site: string, category: string, label: string }[] = [];
   @Input() timeframe!: string; // E.g., "lastHour", "lastDay"
 
@@ -33,17 +33,18 @@ export class LineChartComponent implements OnInit {
   private tooltip: any;
   private tooltip_enabled: boolean = false;
   private colors = ["#0d6efd", "#198754", "#ab2e3c"];
-  private labels = ["Data 1", "Data 2", "Data 3"];
+  private legends = ["Data 1", "Data 2", "Data 3"];
   private startDate: Date = new Date();
   private endDate: Date = new Date();
+  private DATAPOINTS_PER_GRAPH = 100;
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.setDates();
-    this.labels = []
+    this.legends = []
     this.dataSources.forEach(dataSource => {
-      this.labels.push(dataSource.label.toString())
+      this.legends.push(dataSource.label.toString())
     });
 
     this.fetchDataForTimeframe().subscribe(allData => {
@@ -51,6 +52,20 @@ export class LineChartComponent implements OnInit {
       this.createChart();
       this.updateData();
     });
+  }
+
+  getPosition(event: { srcElement: any; }){
+    let offsetLeft = 0;
+    let offsetTop = 0;
+
+    let el = event.srcElement;
+
+    while(el){
+        offsetLeft += el.offsetLeft;
+        offsetTop += el.offsetTop;
+        el = el.parentElement;
+    }
+    return { offsetTop:offsetTop , offsetLeft:offsetLeft }
   }
 
   fetchDataForTimeframe() {
@@ -73,7 +88,8 @@ export class LineChartComponent implements OnInit {
 
     switch (this.timeframe) {
         case 'lastHour':
-          this.startDate.setHours(currentTime.getHours() - 1);
+          this.startDate = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000);
+          this.endDate = new Date(currentTime.getTime());
           break;
         case 'thisDay':
           this.startDate.setHours(2, 0, 0, 0);
@@ -125,6 +141,8 @@ export class LineChartComponent implements OnInit {
         let allData: any = [];
         responses.forEach(res => {
           let processedData = this.processData(res.Response);
+          
+          processedData = this.sampleDataByTime(processedData, this.DATAPOINTS_PER_GRAPH);
           allData.push(processedData);
         });
         return allData;
@@ -149,6 +167,33 @@ export class LineChartComponent implements OnInit {
       this.allData = allData;
       this.updateChart();
     });
+  }
+
+  /**
+  * Samples data at regular time intervals.
+  * @param data - The original dataset, sorted by date/time.
+  * @param desiredPoints - The number of data points you want.
+  * @returns - The sampled dataset.
+  */
+  private sampleDataByTime(data: { date: Date, value: number }[], desiredPoints: number): { date: Date, value: number }[] {
+    if (desiredPoints >= data.length || desiredPoints <= 0) {
+        return data;  // Return original data if desiredPoints is invalid.
+    }
+
+    const timeRange = data[data.length - 1].date.getTime() - data[0].date.getTime();
+    const timeInterval = timeRange / (desiredPoints - 1);
+    
+    let sampled = [];
+    let nextTime = data[0].date.getTime();
+
+    for (let point of data) {
+        if (point.date.getTime() >= nextTime) {
+            sampled.push(point);
+            nextTime += timeInterval;
+        }
+    }
+
+    return sampled;
   }
 
   private createChart() {
@@ -264,7 +309,7 @@ export class LineChartComponent implements OnInit {
       .attr("stroke-dashoffset", this.totalLength)
       .transition()
       .duration(2000)
-      .ease(d3.easeLinear)
+      .ease(d3.easeSinInOut)
       .attr("stroke-dashoffset", 0)
       .attr("data-old-length", this.totalLength);
   }
@@ -289,7 +334,7 @@ export class LineChartComponent implements OnInit {
       .attr("text-anchor", "end")
       .attr("x", this.width)
       .attr("y", this.height - 6)
-      .text("Date");
+      .text(this.labels.xAxis);
   
     // Y-axis label
     this.svg.append("text")
@@ -298,7 +343,7 @@ export class LineChartComponent implements OnInit {
       .attr("y", 6)
       .attr("dy", "0.5em")
       .attr("dx", "1.5em")
-      .text("°C");
+      .text(this.labels.yAxis);
   }
   
   private addTitle() {
@@ -308,13 +353,13 @@ export class LineChartComponent implements OnInit {
       .attr("x", this.width / 2)
       .attr("y", -20)
       .attr("text-anchor", "middle")
-      .text("Temperature");
+      .text(this.chartTitle);
   }
   
   private addLegend() {
     // Add the legend
     let legend = this.svg.selectAll(".legend")
-      .data(this.labels)
+      .data(this.legends)
       .enter().append("g")
       .attr("class", "legend")
       .attr("transform", (d: any, i: number) => "translate(0," + i * 20 + ")");
@@ -434,9 +479,18 @@ export class LineChartComponent implements OnInit {
 
     let node = this.tooltip.node();
 
-    let tooltipBox = node.getBoundingClientRect();
-    this.tooltip.style("left", (this.margin.left + this.xScale(closestDataPoint.date) + 35) + "px")
-      .style("top", (this.yScale(closestDataPoint.value) + tooltipBox.height/2) + "px");
+    // Assuming 'circle' is the D3 selection of the circle being hovered over
+    let circlePosition = circle.node().getBoundingClientRect();
+
+    // Adjust for scroll
+    let scrollX = window.scrollX || window.pageXOffset;
+    let scrollY = window.scrollY || window.pageYOffset;
+
+    // Setting tooltip position
+    let tooltipX = circlePosition.left + circlePosition.width + 20 + scrollX; // 10px gap to the right of the circle
+    let tooltipY = circlePosition.top + scrollY;
+
+    this.tooltip.style("left", tooltipX + "px").style("top", tooltipY + "px");
     }
   
   private handleMouseOut(circle: any) {
