@@ -17,6 +17,8 @@ export class GaugeComponent implements OnInit, OnDestroy {
   private valueArc: any;
   private emptyArc: any;
   private transitionDuration: number = 1000;  // in milliseconds
+  private updateInterval: number = 1000;  // in milliseconds
+  private updateTimer: any;
   @Input() site!: string;
   @Input() category!: string;
   @Input() unit!: string;
@@ -26,50 +28,27 @@ export class GaugeComponent implements OnInit, OnDestroy {
 
   constructor(private el: ElementRef, private ngZone: NgZone, private dataService: DataService) {}
 
-  fetchDataAndUpdateGauge() {
-    this.dataService.getLatestData(this.site, this.category).subscribe((data: any) => {
-      // Assuming the response has a property 'value' which contains the data for the gauge
-      const gaugeValue = data.Response[1];
-      console.log(gaugeValue)
-      this.updateGauge(gaugeValue);
-    });
-  }
-
-  ngOnInit() {
-    this.ngZone.runOutsideAngular(() => {
-      this.createGauge(this.range_min);
-      this.fetchDataAndUpdateGauge();
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.svg) {
-      this.svg.remove();
-    }
-  }
-
-  private createGauge(value: number) {
-    let gauge_border = 2;
-
-    // Scale for the gauge
+  private initializeScale() {
     this.scale = d3.scaleLinear()
       .domain([this.range_max, this.range_min])
       .range([-3 * Math.PI / 4, 3 * Math.PI / 4]);
+  }
 
-
+  private createSVG() {
     this.svg = d3.select(this.el.nativeElement).select('.gauge-container').append('svg')
-
       .attr('width', this.width)
       .attr('height', this.height);
-      
+  }
 
-    // Empty Arc - represents the unfilled part of the gauge
+  private createEmptyArc() {
+    let gauge_border = 2.5;
+
     this.emptyArc = d3.arc()
-    .innerRadius(this.innerRadius - gauge_border/2)
-    .outerRadius(this.outerRadius + gauge_border/2)
-    .startAngle(-3 * Math.PI / 4)
-    .endAngle(3 * Math.PI / 4)
-    .cornerRadius(10);
+      .innerRadius(this.innerRadius - gauge_border/2)
+      .outerRadius(this.outerRadius + gauge_border/2)
+      .startAngle(-3 * Math.PI / 4)
+      .endAngle(3 * Math.PI / 4)
+      .cornerRadius(10);
 
     this.svg.append("path")
       .attr("d", this.emptyArc)
@@ -77,8 +56,28 @@ export class GaugeComponent implements OnInit, OnDestroy {
       .attr("fill", "#888")  // Adjust to your desired gray color
       .attr("stroke", "#2f2f2f") // Border color
       .attr("stroke-width", gauge_border)  // Border width
-      .attr("class", "emptyArc");
+      .attr("class", "emptyArc")
+      .attr("fill", "url(#emptyArcGradient)");
 
+    this.createGradients();  // Moved gradient creation here
+  }
+
+  private createValueArc(initialValue: number) {
+    this.valueArc = d3.arc()
+      .innerRadius(this.innerRadius)
+      .outerRadius(this.outerRadius)
+      .startAngle(-3 * Math.PI / 4)
+      .endAngle(-3 * Math.PI / 4 + (6 * Math.PI / 4) * (initialValue / this.range_max))
+      .cornerRadius(10);
+
+    this.svg.append("path")
+      .attr("class", "valueArc")
+      .attr("transform", `translate(${this.width / 2},${this.height/2})`)
+      .attr("fill", `url(${location.href}#gaugeGradient)`)
+      .datum({ endAngle: -3 * Math.PI / 4 });  // Initial value;
+  }
+
+  private createGradients() {
     const defs = this.svg.append("defs");
     
     defs.append("radialGradient")
@@ -115,44 +114,25 @@ export class GaugeComponent implements OnInit, OnDestroy {
     feMerge.append("feMergeNode").attr("in", "offsetBlur");
     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
 
-    this.svg.select(".emptyArc")
-      .attr("fill", "url(#emptyArcGradient)");
-
-    this.svg.select(".valueArc")
-    .style("filter", "url(#dropshadow)");
-
-    // Main arc
-    this.valueArc = d3.arc()
-      .innerRadius(this.innerRadius)
-      .outerRadius(this.outerRadius)
-      .startAngle(-3 * Math.PI / 4)
-      .endAngle(-3 * Math.PI / 4 + (6 * Math.PI / 4) * (value / this.range_max))
-      .cornerRadius(10);
-
     // Gradient for the arc
     this.svg.append("defs").append("linearGradient")
-    .attr("id", "gaugeGradient")
-    .attr("gradientUnits", "objectBoundingBox")
-    .attr("x1", 0).attr("y1", 0.5)  // Starts from left-middle
-    .attr("x2", 1).attr("y2", 0.5)  // Ends at right-middle
-    .selectAll("stop")
-    .data([
-      {offset: 0, color: "#f26387"},
-      {offset: 0.2, color: "yellow"},
-      {offset: 0.8, color: "turquoise"},
-      {offset: 1, color: "#1e00ff"},
-    ])
-    .enter().append("stop")
-    .attr("offset", (d: { offset: number; }) => d.offset)
-    .attr("stop-color", (d: { color: string; }) => d.color);
+      .attr("id", "gaugeGradient")
+      .attr("gradientUnits", "objectBoundingBox")
+      .attr("x1", 0).attr("y1", 0.5)  // Starts from left-middle
+      .attr("x2", 1).attr("y2", 0.5)  // Ends at right-middle
+      .selectAll("stop")
+      .data([
+        {offset: 0, color: "blue"},
+        {offset: 0.2, color: "turquoise"},
+        {offset: 0.8, color: "yellow"},
+        {offset: 1, color: "#f26387"},
+      ])
+      .enter().append("stop")
+      .attr("offset", (d: { offset: number; }) => d.offset)
+      .attr("stop-color", (d: { color: string; }) => d.color);
+  }
 
-      
-    this.svg.append("path")
-      .attr("class", "valueArc")
-      .attr("transform", `translate(${this.width / 2},${this.height/2})`)
-      .attr("fill", `url(${location.href}#gaugeGradient)`)
-      .datum({ endAngle: -3 * Math.PI / 4 });  // Initial value;
-
+  private createText() {
     //add value text
     this.svg.append("text")
       .attr("class", "gaugeValueText")
@@ -175,8 +155,9 @@ export class GaugeComponent implements OnInit, OnDestroy {
       .attr("fill", "#ddd")
       .style("filter", "url(#dropshadow)")
       .text(this.title);
+  }
 
-
+  private createNeedle() {
     // add needle
     this.svg.append("line")
       .datum({ angle: this.scale(this.range_min) })  // Store the initial angle.
@@ -196,19 +177,25 @@ export class GaugeComponent implements OnInit, OnDestroy {
     .attr("cy", this.height / 2)
     .attr("r", 10)  // Radius of the pivot point. You can adjust this value.
     .attr("fill", "#c3c3c3");  // Fill color of the pivot. Adjust as needed.
-
-
-    this.updateGauge(value);
   }
 
-  private updateGauge(value: number) {
+  private createGauge(value: number) {
+    this.initializeScale();
+    this.createSVG();
+    this.createEmptyArc();
+    this.createValueArc(this.range_min);
+    this.createText();
+    this.createNeedle();
+    this.fetchDataAndUpdateGauge();
+  }
 
-    const angle = this.scale(value);
-
-    const newEndAngle = this.scale(value);
+  private updateValueArc(value: number) {
+    let newEndAngle = Math.min(this.scale(value), this.scale(this.range_min));
+    newEndAngle = Math.max(newEndAngle, this.scale(this.range_max));
+    //const newEndAngle = this.scale(value);
 
     const valueArcSelection = this.svg.select(".valueArc");
-    
+
     // Smooth transition
     valueArcSelection.transition()
         .duration(this.transitionDuration)
@@ -220,6 +207,11 @@ export class GaugeComponent implements OnInit, OnDestroy {
                 return this.valueArc(d);
             };
         });
+  }
+
+  private updateNeedle(value: number) {
+    let angle = Math.min(this.scale(value), this.scale(this.range_min));
+    angle = Math.max(angle, this.scale(this.range_max));
 
     // Get the needle selection
     const needleSelection = this.svg.select(".needle");
@@ -240,9 +232,41 @@ export class GaugeComponent implements OnInit, OnDestroy {
                 return this.height / 2 - this.innerRadius * Math.sin(Math.PI / 2 + d.angle + 0.06) * 0.875;
             };
         });
+  }
 
+  private updateValueText(value: number) {
     this.svg.select(".gaugeValueText")
-    .text(value.toString() + this.unit);
-      
+        .text(value.toString() + this.unit);
+  }
+
+  private updateGauge(value: number) {
+    this.updateValueArc(value);
+    this.updateNeedle(value);
+    this.updateValueText(value);
+  }
+
+  fetchDataAndUpdateGauge() {
+    this.dataService.getLatestData(this.site, this.category).subscribe((data: any) => {
+      // Assuming the response has a property 'value' which contains the data for the gauge
+      const gaugeValue = data.Response[1];
+      console.log(gaugeValue)
+      this.updateGauge(gaugeValue);
+    });
+  }
+
+  ngOnInit() {
+    this.ngZone.runOutsideAngular(() => {
+      this.createGauge(0);
+
+      this.updateTimer = setInterval(() => {
+          this.fetchDataAndUpdateGauge();
+      }, this.updateInterval);  // Fetch new data every second
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.svg) {
+      this.svg.remove();
+    }
   }
 }
