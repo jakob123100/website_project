@@ -37,7 +37,7 @@ export class GaugeComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.ngZone.runOutsideAngular(() => {
-      this.createGauge(0);
+      this.createGauge(this.range_min);
       this.fetchDataAndUpdateGauge();
     });
   }

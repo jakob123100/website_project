@@ -6,12 +6,11 @@ import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { LineChartComponent } from './line-chart/line-chart.component';
 import { GaugeComponent } from './gauge/gauge.component';
-import { SpeedometerComponent } from './speedometer/speedometer.component';
 
 @NgModule({
   declarations: [
     AppComponent
-  , LineChartComponent, GaugeComponent, SpeedometerComponent],
+  , LineChartComponent, GaugeComponent],
   imports: [
     HttpClientModule,
     BrowserModule,
