@@ -9,6 +9,7 @@ body {
     position: relative;
     background: #191c24;
     border-radius: 10px;
+    border: 2px solid #353943;
 }
   
 .tooltip {

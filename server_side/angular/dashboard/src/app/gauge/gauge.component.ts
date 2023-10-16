@@ -122,10 +122,12 @@ export class GaugeComponent implements OnInit, OnDestroy {
       .attr("x2", 1).attr("y2", 0.5)  // Ends at right-middle
       .selectAll("stop")
       .data([
-        {offset: 0, color: "blue"},
-        {offset: 0.2, color: "turquoise"},
-        {offset: 0.8, color: "yellow"},
-        {offset: 1, color: "#f26387"},
+        {offset: 0, color: "#416fd9"},
+        //{offset: 0.5, color: "#41d1d9"},
+        {offset: 1, color: "#41d955"},
+        //{offset: 0.2, color: "turquoise"},
+        //{offset: 0.8, color: "yellow"},
+        //{offset: 1, color: "#f26387"},
       ])
       .enter().append("stop")
       .attr("offset", (d: { offset: number; }) => d.offset)

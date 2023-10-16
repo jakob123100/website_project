@@ -5,7 +5,7 @@
     [unit]="'°C'"
     [title]="'Outdoor Temp'"
     [range_min]="-15"
-    [range_max]="25"
+    [range_max]="10"
 >
 
 </app-gauge>
@@ -17,6 +17,7 @@
     [dataSources]="[
         { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
         { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+        { site: 'koltrastvägen', category: 'temp_heatpump_out_c', label: 'Heatpump Out' },
     ]" 
     [timeframe]="'lastHour'">
 </app-line-chart>
@@ -47,6 +48,7 @@
     [dataSources]="[
         { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
         { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+        { site: 'koltrastvägen', category: 'temp_sauna_c', label: 'Sauna' },
     ]" 
     [timeframe]="'thisMonth'"
     [smoothingFactor]="5">
@@ -56,8 +58,10 @@
     [chartTitle]="'Temperature Last Year'"
     [labels]="{ yAxis: '°C', xAxis: 'Time'}"
     [dataSources]="[
-        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
-        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+    { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+    { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+    { site: 'koltrastvägen', category: 'temp_sauna_c', label: 'Sauna' },
+    { site: 'koltrastvägen', category: 'temp_heatpump_out_c', label: 'Heatpump Out' },
     ]" 
     [timeframe]="'thisYear'"
     [smoothingFactor]="20">

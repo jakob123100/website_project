@@ -33,8 +33,8 @@ export class LineChartComponent implements OnInit {
   private totalLength = 0;
   private tooltip: any;
   private tooltip_enabled: boolean = false;
-  private colors = ["#0d6efd", "#198754", "#ab2e3c"];
-  private legends = ["Data 1", "Data 2", "Data 3"];
+  private colors = ["#3278fa", "#1ad994", "#04c7d1", "#8e3dff", "#d4709b"];
+  private legends = ["Data 1", "Data 2", "Data 3", "Data 4", "Data 5"];
   private startDate: Date = new Date();
   private endDate: Date = new Date();
   private DATAPOINTS_PER_GRAPH = 150;
@@ -382,7 +382,7 @@ export class LineChartComponent implements OnInit {
       .data(this.legends)
       .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", (d: any, i: number) => "translate(0," + i * 20 + ")");
+      .attr("transform", (d: any, i: number) => "translate(0," + (i-0.5) * 20 + ")");
   
     // Add the colored rectangles
     legend.append("line")
