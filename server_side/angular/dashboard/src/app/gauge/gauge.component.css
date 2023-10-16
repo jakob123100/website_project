@@ -1,0 +1,13 @@
+.gauge-container {
+    border-radius: 25px;
+    overflow: hidden; /* This will ensure the SVG doesn't spill outside the container */
+    background: radial-gradient(circle at center, #4b546c, #191c24); /* Radial gradient for depth */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.15); /* Box shadow for lifting effect */
+    border: 2px solid #353943; /* Subtle border */
+    width: 250px; /* Same width as your SVG */
+    height: 250px; /* Same height as your SVG */
+}
+
+.valueArc, .emptyArc {
+    filter: url(#shadowFilter);
+}

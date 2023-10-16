@@ -1,5 +1,14 @@
 
+<app-gauge
+    [site]="'koltrastvägen'"
+    [category]="'temp_outdoor_c'"
+    [unit]="'°C'"
+    [title]="'Outdoor Temp'"
+    [range_min]="-25"
+    [range_max]="40"
+>
 
+</app-gauge>
 
 
 <app-line-chart 
@@ -30,6 +39,28 @@
         { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
     ]" 
     [timeframe]="'thisWeek'">
+</app-line-chart>
+
+<app-line-chart 
+    [chartTitle]="'Temperature This Month'"
+    [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+    [dataSources]="[
+        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+    ]" 
+    [timeframe]="'thisMonth'"
+    [smoothingFactor]="5">
+</app-line-chart>
+
+<app-line-chart 
+    [chartTitle]="'Temperature Last Year'"
+    [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+    [dataSources]="[
+        { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+        { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+    ]" 
+    [timeframe]="'thisYear'"
+    [smoothingFactor]="20">
 </app-line-chart>
 
 

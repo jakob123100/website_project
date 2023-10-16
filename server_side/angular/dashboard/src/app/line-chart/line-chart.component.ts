@@ -17,6 +17,7 @@ export class LineChartComponent implements OnInit {
   @Input() labels!: { yAxis: string, xAxis: string}; // E.g., "lastHour", "lastDay"
   @Input() dataSources: { site: string, category: string, label: string }[] = [];
   @Input() timeframe!: string; // E.g., "lastHour", "lastDay"
+  @Input() smoothingFactor: number = 1; // E.g., "lastHour", "lastDay"
 
   private allData: {date: Date, value: number}[][] = [];
   private svg: any;
@@ -36,7 +37,7 @@ export class LineChartComponent implements OnInit {
   private legends = ["Data 1", "Data 2", "Data 3"];
   private startDate: Date = new Date();
   private endDate: Date = new Date();
-  private DATAPOINTS_PER_GRAPH = 100;
+  private DATAPOINTS_PER_GRAPH = 150;
 
   constructor(private http: HttpClient) { }
 
@@ -74,7 +75,7 @@ export class LineChartComponent implements OnInit {
     let startTime: string = this.startDate.toISOString();
     let endTime: string = this.endDate.toISOString();
 
-    console.log(`start time: ${startTime}, end time: ${endTime}`)
+    console.log(`start time: ${startTime}, end time: ${endTime}`);
 
     return this.getDataBetweenDates(startTime, endTime);
   }
@@ -143,6 +144,7 @@ export class LineChartComponent implements OnInit {
           let processedData = this.processData(res.Response);
           
           processedData = this.sampleDataByTime(processedData, this.DATAPOINTS_PER_GRAPH);
+          processedData = this.smoothData(processedData, this.smoothingFactor);
           allData.push(processedData);
         });
         return allData;
@@ -194,6 +196,24 @@ export class LineChartComponent implements OnInit {
     }
 
     return sampled;
+  }
+
+  private smoothData(data: { date: Date, value: number }[], smoothingFactor: number): { date: Date, value: number }[] {
+    if (smoothingFactor <= 1) {
+        return data;  // Return original data if smoothingFactor is invalid.
+    }
+
+    let smoothedData: { date: Date, value: number }[] = data;
+    for (let i = 0; i < data.length; i++) {
+      let sum = 0;
+      let smoothBy = Math.min(smoothingFactor, data.length - i)
+      for (let j = 0; j < smoothBy; j++) {
+        sum += data[i + j].value;
+      }
+      smoothedData[i].value = Math.round(sum/smoothBy * 100)/100;
+    }
+
+    return smoothedData;
   }
 
   private createChart() {
