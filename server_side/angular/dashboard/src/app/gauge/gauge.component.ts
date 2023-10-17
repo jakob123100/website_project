@@ -8,8 +8,8 @@ import { DataService } from '../data.service';
   styleUrls: ['./gauge.component.css']
 })
 export class GaugeComponent implements OnInit, OnDestroy {
-  private width: number = 250;
-  private height: number = 250;
+  private width: number = 260;
+  private height: number = 260;
   private innerRadius: number = 75;
   private outerRadius: number = 105;
   private svg: any;
@@ -60,6 +60,28 @@ export class GaugeComponent implements OnInit, OnDestroy {
       .attr("fill", "url(#emptyArcGradient)");
 
     this.createGradients();  // Moved gradient creation here
+
+    // Add the max value to the left corner
+    this.svg.append("text")
+        .attr("x", this.width / 2 + this.outerRadius * Math.cos(1 * Math.PI / 4) * 1.15)
+        .attr("y", this.height / 2 + this.outerRadius * Math.sin(1 * Math.PI / 4) * 1.15)
+        .attr("text-anchor", "middle")
+        .attr("font-family", "monospace")
+        .attr("font-size", "16")
+        .attr("fill", "#ddd")
+        .style("filter", "url(#dropshadow)")
+        .text(this.range_max.toString() + this.unit);
+
+    // Add the min value to the right corner
+    this.svg.append("text")
+        .attr("x", this.width / 2 + this.outerRadius * Math.cos(3 * Math.PI / 4) * 1.15)
+        .attr("y", this.height / 2 + this.outerRadius * Math.sin(3 * Math.PI / 4) * 1.15)
+        .attr("text-anchor", "middle")
+        .attr("font-family", "monospace")
+        .attr("font-size", "16")
+        .attr("fill", "#ddd")
+        .style("filter", "url(#dropshadow)")
+        .text(this.range_min.toString() + this.unit);
   }
 
   private createValueArc(initialValue: number) {
@@ -141,7 +163,7 @@ export class GaugeComponent implements OnInit, OnDestroy {
       .attr("x", this.width / 2)
       .attr("y", this.height / 2 + 70)
       .attr("text-anchor", "middle")
-      .attr("font-family", "Arial")
+      .attr("font-family", "monospace")
       .attr("font-size", "28")
       .attr("fill", "#ddd")
       .style("filter", "url(#dropshadow)")
@@ -150,9 +172,9 @@ export class GaugeComponent implements OnInit, OnDestroy {
     //add title text
     this.svg.append("text")
       .attr("x", this.width / 2)
-      .attr("y", this.height / 2 + 105)
+      .attr("y", this.height / 2 + 115)
       .attr("text-anchor", "middle")
-      .attr("font-family", "Arial")
+      .attr("font-family", "monospace")
       .attr("font-size", "24")
       .attr("fill", "#ddd")
       .style("filter", "url(#dropshadow)")

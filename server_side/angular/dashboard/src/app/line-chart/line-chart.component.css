@@ -2,7 +2,7 @@
 body {
     background-color: #090a0e;  /* Dark background */
     color: #ddd;  /* Light text */
-    font-family: 'Roboto', sans-serif;  /* Change the font */
+    font-family: 'Roboto', monospace;  /* Change the font */
 }
 
 .plot{
@@ -24,24 +24,30 @@ body {
 
 .chartTitle {
     fill: #ddd;
-    font-size: larger;
-    font-family: 'Lato', sans-serif;
+    font-size: x-large;
+    font-family: 'Lato', monospace;
 }
 
-.x.label, .y.label, .tooltip {
+.x.label, .y.label {
     fill: #ddd;
-    font-size: larger;
-    font-family: 'Open Sans', sans-serif;
+    font-size: x-large;
+    font-family: 'Open Sans', monospace;
+}
+
+.tooltip {
+    fill: #ddd;
+    font-size: large;
+    font-family: 'Open Sans', monospace;
 }
 
 .legend{
     fill: #ddd;
-    font-size: medium;
-    font-family: 'Open Sans', sans-serif;
+    font-size: large;
+    font-family: 'Open Sans', monospace;
 }
 
 .axis text {
-    font-size: medium;  /* Increase font size */
+    font-size: large;  /* Increase font size */
     fill: #ddd;  /* Light color for dark theme */
   }
 

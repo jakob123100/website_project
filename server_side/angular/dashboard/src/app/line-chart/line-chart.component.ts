@@ -399,6 +399,7 @@ export class LineChartComponent implements OnInit {
       .attr("y", -25)
       .attr("dy", ".35em")
       .style("text-anchor", "end")
+      .attr("font-family", "monospace")
       .text((d: any) => d);
   }
   
