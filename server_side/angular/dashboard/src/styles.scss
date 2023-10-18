@@ -1,1 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
+
+//html, body { height: 100%; }
+//body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@import '@angular/material/theming';
+
+// Define your color palettes
+$dark-blue-primary: mat-palette($mat-indigo);
+$dark-blue-accent: mat-palette($mat-blue, A400, A200, A100);
+$dark-blue-warn: mat-palette($mat-red);
+
+$dark-blue-theme: mat-dark-theme($dark-blue-primary, $dark-blue-accent, $dark-blue-warn);
+
+@include angular-material-theme($dark-blue-theme);
+
+// Set the background color for the main content of Angular Material
+.mat-app-background {
+    background-color: #1a237e;
+}

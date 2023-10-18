@@ -1,0 +1,154 @@
+<mat-sidenav-container class="sidenav-container">
+
+    <!-- Side navigation -->
+    <mat-sidenav #sidenav class="sidenav" mode="side" opened>
+      <mat-nav-list>
+        <mat-list-item (click)="sidenav.toggle()">
+          <mat-icon matListIcon>home</mat-icon>
+          <span>Dashboard</span>
+        </mat-list-item>
+        <mat-list-item (click)="sidenav.toggle()">
+          <mat-icon matListIcon>settings</mat-icon>
+          <span>Settings</span>
+        </mat-list-item>
+        <!-- Add more navigation items here -->
+      </mat-nav-list>
+    </mat-sidenav>
+  
+    <!-- Main content -->
+    <mat-sidenav-content>
+      <mat-toolbar color="primary">
+        <button mat-icon-button (click)="sidenav.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="dashboard-title">Dashboard</span>
+        <span class="spacer"></span> <!-- Spacer after the title -->
+      </mat-toolbar>
+  
+      <!-- Dashboard content goes here -->
+      <div class="dashboard-content">
+
+        <!-- Title centered above the gauges -->
+        <h2 class="gauge-section-title">Temperature Gauges</h2>
+        <!-- Make this a flex container -->
+        <div class="gauge-wrapper">
+
+            <div class="gauge-container">
+                <app-gauge
+                [site]="'koltrastvägen'"
+                [category]="'temp_outdoor_c'"
+                [unit]="'°C'"
+                [title]="'Outdoor Temp'"
+                [range_min]="-15"
+                [range_max]="25"
+                ></app-gauge>
+            </div>
+            <div class="gauge-container">
+                <app-gauge
+                [site]="'koltrastvägen'"
+                [category]="'temp_indoor_c'"
+                [unit]="'°C'"
+                [title]="'Indoor Temp'"
+                [range_min]="20"
+                [range_max]="25"
+                ></app-gauge>
+            </div>
+            <div class="gauge-container">
+                <app-gauge
+                [site]="'koltrastvägen'"
+                [category]="'temp_heatpump_in_c'"
+                [unit]="'°C'"
+                [title]="'Heatpump In'"
+                [range_min]="20"
+                [range_max]="25"
+                ></app-gauge>
+            </div>
+            <div class="gauge-container">
+                <app-gauge
+                [site]="'koltrastvägen'"
+                [category]="'temp_heatpump_out_c'"
+                [unit]="'°C'"
+                [title]="'Heatpump Out'"
+                [range_min]="-15"
+                [range_max]="25"
+                ></app-gauge>
+            </div>
+            <div class="gauge-container">
+                <app-gauge
+                [site]="'koltrastvägen'"
+                [category]="'temp_sauna_c'"
+                [unit]="'°C'"
+                [title]="'Sauna Temp'"
+                [range_min]="10"
+                [range_max]="90"
+                ></app-gauge>
+            </div>
+        </div>
+        <div class="linechart-container">
+            <app-line-chart 
+                [chartTitle]="'Temperature Last Hour'"
+                [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+                [dataSources]="[
+                    { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+                    { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+                    { site: 'koltrastvägen', category: 'temp_heatpump_out_c', label: 'Heatpump Out' },
+                ]" 
+                [timeframe]="'lastHour'">
+            </app-line-chart>
+        </div>
+        <div class="linechart-container">
+            <app-line-chart 
+                [chartTitle]="'Temperature This Day'"
+                [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+                [dataSources]="[
+                    { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+                    { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+                ]" 
+                [timeframe]="'thisDay'">
+            </app-line-chart>
+        </div>
+
+        <div class="linechart-container">
+            <app-line-chart 
+                [chartTitle]="'Temperature Last Week'"
+                [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+                [dataSources]="[
+                    { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+                    { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+                ]" 
+                [timeframe]="'thisWeek'">
+            </app-line-chart>
+        </div>
+
+        <div class="linechart-container">
+            <app-line-chart 
+                [chartTitle]="'Temperature This Month'"
+                [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+                [dataSources]="[
+                    { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+                    { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+                    { site: 'koltrastvägen', category: 'temp_sauna_c', label: 'Sauna' },
+                ]" 
+                [timeframe]="'thisMonth'"
+                [smoothingFactor]="5">
+            </app-line-chart>
+        </div>
+
+        <div class="linechart-container">
+            <app-line-chart 
+                [chartTitle]="'Temperature Last Year'"
+                [labels]="{ yAxis: '°C', xAxis: 'Time'}"
+                [dataSources]="[
+                { site: 'koltrastvägen', category: 'temp_indoor_c', label: 'Indoor' },
+                { site: 'koltrastvägen', category: 'temp_outdoor_c', label: 'Outdoor' },
+                { site: 'koltrastvägen', category: 'temp_sauna_c', label: 'Sauna' },
+                { site: 'koltrastvägen', category: 'temp_heatpump_out_c', label: 'Heatpump Out' },
+                ]" 
+                [timeframe]="'thisYear'"
+                [smoothingFactor]="20">
+            </app-line-chart>
+        </div>
+    </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+  

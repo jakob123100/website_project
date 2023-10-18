@@ -1,0 +1,65 @@
+
+.sidenav-container {
+    height: 100%;
+}
+
+.sidenav {
+    width: 250px;
+    background-color: rgb(32, 35, 64);
+}
+
+.mat-toolbar {
+    display: flex;
+    justify-content: space-between;
+    background-color: rgb(37, 42, 87);
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.dashboard-content {
+    padding: 20px;
+    background-color: #11141f;
+}
+
+.dashboard-title {
+    font-size: x-large;  /* Adjust as needed */
+}
+
+.dashboard-content {
+    display: flex;
+    justify-content: space-between;  /* Horizontally center the content */
+    align-items: center;      /* Vertically center the content */
+    height: 100%;             /* Use full height of the container */
+    flex-direction: column;   /* Stack items vertically */
+    overflow-x: hidden;
+}
+
+  
+.gauge-wrapper {
+    padding-left: 7.5%;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.gauge-container {
+    flex: 1; 
+    align-items: center;
+}
+
+.gauge-section-title {
+    text-align: center;      /* Center the title */
+    margin-top: 20px;        /* Space at the top */
+    margin-bottom: 30px;     /* Space between the title and the gauges */
+    font-size: xx-large;         /* Adjust font size as needed */
+    color: #eae6e6;             /* Adjust color as needed */
+    font-weight: 500;        /* Semi-bold font weight */
+}
+
+
+.linechart-container {
+    flex: 1; 
+    align-items: center;
+}
