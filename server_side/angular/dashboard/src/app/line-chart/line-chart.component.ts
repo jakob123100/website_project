@@ -1,5 +1,5 @@
 import { ViewEncapsulation } from '@angular/core';
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ElementRef } from '@angular/core';
 import * as d3 from 'd3';
 import { HttpClient } from '@angular/common/http';
 import { interval, forkJoin, Observable } from 'rxjs';
@@ -22,8 +22,8 @@ export class LineChartComponent implements OnInit {
   private allData: {date: Date, value: number}[][] = [];
   private svg: any;
   private margin = {top: 50, right: 40, bottom: 60, left: 60};
-  private width = 960 - this.margin.left - this.margin.right;
-  private height = 500 - this.margin.top - this.margin.bottom;
+  private width = 1200 - this.margin.left - this.margin.right;
+  private height = 600 - this.margin.top - this.margin.bottom;
   private xScale: any;
   private yScale: any;
   private xAxis: any;
@@ -39,18 +39,19 @@ export class LineChartComponent implements OnInit {
   private endDate: Date = new Date();
   private DATAPOINTS_PER_GRAPH = 150;
 
-  constructor(private http: HttpClient) { }
+  constructor(private el: ElementRef, private http: HttpClient) { }
 
   ngOnInit() {
     this.setDates();
-    this.legends = []
+    this.legends = [];
+    this.initializeSvg(); 
     this.dataSources.forEach(dataSource => {
       this.legends.push(dataSource.label.toString())
     });
 
     this.fetchDataForTimeframe().subscribe(allData => {
       this.allData = allData;
-      this.createChart();
+      this.createChart(); 
       this.updateData();
     });
   }
@@ -217,7 +218,6 @@ export class LineChartComponent implements OnInit {
   }
 
   private createChart() {
-    this.initializeSvg();  
     this.createScales();
     
     // Create a line for each dataset
@@ -233,7 +233,9 @@ export class LineChartComponent implements OnInit {
   }
 
   private initializeSvg() {
-    this.svg = d3.select('body').append('svg')
+
+    
+    this.svg = d3.select(this.el.nativeElement).select('.linechart-container').append('svg')
       .attr("class", "plot")
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height + this.margin.top + this.margin.bottom)
@@ -404,7 +406,7 @@ export class LineChartComponent implements OnInit {
   }
   
   private addTooltip() {
-    this.tooltip = d3.select("body").append("div")
+    this.tooltip = d3.select(this.el.nativeElement).select('.linechart-container').append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
   
@@ -510,6 +512,11 @@ export class LineChartComponent implements OnInit {
     // Setting tooltip position
     let tooltipX = circlePosition.left + circlePosition.width + 20 + scrollX; // 10px gap to the right of the circle
     let tooltipY = circlePosition.top + scrollY;
+    /*const container = d3.select(this.el.nativeElement).select('.linechart-container').node();
+      if (container instanceof Element) {
+        tooltipX =  container.getBoundingClientRect().left + circlePosition.width + 20 + scrollX;
+      }
+    console.log("ToolTIP XXXX" + tooltipX);*/
 
     this.tooltip.style("left", tooltipX + "px").style("top", tooltipY + "px");
     }

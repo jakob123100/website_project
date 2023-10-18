@@ -9,9 +9,28 @@
 }
 
 .mat-toolbar {
+    position: fixed;
     display: flex;
     justify-content: space-between;
     background-color: rgb(37, 42, 87);
+    z-index: 2; /* adjust if needed */
+    top: 0;
+}
+
+.mat-sidenav-content {
+    padding-top: 54px; /* This is a standard height for mat-toolbar. Adjust if your toolbar has a different height. */
+}
+
+
+.mat-typography {
+    padding: 0;
+    margin: 0;
+}
+
+.mat-sidenav {
+    position: fixed;
+    left: 0;
+    z-index: 1; /* adjust if needed */
 }
 
 .spacer {
@@ -38,18 +57,19 @@
 
   
 .gauge-wrapper {
-    padding-left: 7.5%;
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
+
+    margin-top: 2.5%;
+    padding-bottom: 5%;
+
     width: 100%;
 }
 
 .gauge-container {
-    flex: 1; 
-    align-items: center;
 }
 
-.gauge-section-title {
+.section-title {
     text-align: center;      /* Center the title */
     margin-top: 20px;        /* Space at the top */
     margin-bottom: 30px;     /* Space between the title and the gauges */
@@ -58,8 +78,14 @@
     font-weight: 500;        /* Semi-bold font weight */
 }
 
+.linechart-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
 .linechart-container {
-    flex: 1; 
-    align-items: center;
+    margin-bottom: 2.5%;
+    margin-top: 2.5%;
 }
