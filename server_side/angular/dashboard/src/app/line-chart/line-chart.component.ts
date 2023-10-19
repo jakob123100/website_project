@@ -37,7 +37,7 @@ export class LineChartComponent implements OnInit {
   private legends = ["Data 1", "Data 2", "Data 3", "Data 4", "Data 5"];
   private startDate: Date = new Date();
   private endDate: Date = new Date();
-  private DATAPOINTS_PER_GRAPH = 150;
+  private DATAPOINTS_PER_GRAPH = 250;
   private updateInterval = 5000;
 
   constructor(private el: ElementRef, private http: HttpClient) { }
@@ -513,8 +513,9 @@ export class LineChartComponent implements OnInit {
     let scrollX = window.scrollX || window.pageXOffset;
     let scrollY = window.scrollY || window.pageYOffset;
 
+    const rect = this.el.nativeElement.parentElement.getBoundingClientRect();
     // Setting tooltip position
-    let tooltipX = circlePosition.left + circlePosition.width + 20 + scrollX; // 10px gap to the right of the circle
+    let tooltipX = circlePosition.left + circlePosition.width + scrollX - rect.left + 50; // 10px gap to the right of the circle
     let tooltipY = circlePosition.top + scrollY;
     /*const container = d3.select(this.el.nativeElement).select('.linechart-container').node();
       if (container instanceof Element) {
@@ -605,24 +606,34 @@ export class LineChartComponent implements OnInit {
         .y(d => this.yScale(d.value))
         .curve(d3.curveMonotoneX);
 
-      lineElement.datum(dataset)
-        .transition("line")
-        .attr("d", valueline);
+      lineElement.datum(dataset);
     
-        
+      lineElement
+      .transition("line")
+      .attr("d", valueline);
       // Update total length
       let totalLength = lineElement.node().getTotalLength();
       
       let oldLength = lineElement.attr("data-old-length");
 
-      // Animate line drawing
       lineElement.attr("stroke-dasharray", totalLength + " " + totalLength)
-        .attr("stroke-dashoffset", totalLength - oldLength)
+      .attr("stroke-dashoffset", 0);
+
+
+      /*// Animate line drawing
+      lineElement.attr("stroke-dasharray", totalLength + " " + totalLength)
+        .datum(dataset)
+        .attr("stroke-dashoffset", 0)
         .transition()
         .duration(2000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0)
-        .attr("data-old-length", totalLength);
+        .attr("data-old-length", totalLength);*/
+
+        /*lineElement.attr("stroke-dasharray", totalLength + " " + totalLength)
+
+        .attr("stroke-dashoffset", 0)
+        .attr("data-old-length", totalLength);*/
     });
   
   }   
