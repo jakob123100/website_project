@@ -22,8 +22,8 @@ export class LineChartComponent implements OnInit {
   private allData: {date: Date, value: number}[][] = [];
   private svg: any;
   private margin = {top: 50, right: 40, bottom: 60, left: 60};
-  private width = 1200 - this.margin.left - this.margin.right;
-  private height = 600 - this.margin.top - this.margin.bottom;
+  private width = 1400 - this.margin.left - this.margin.right;
+  private height = 800 - this.margin.top - this.margin.bottom;
   private xScale: any;
   private yScale: any;
   private xAxis: any;
@@ -38,6 +38,7 @@ export class LineChartComponent implements OnInit {
   private startDate: Date = new Date();
   private endDate: Date = new Date();
   private DATAPOINTS_PER_GRAPH = 150;
+  private updateInterval = 5000;
 
   constructor(private el: ElementRef, private http: HttpClient) { }
 
@@ -76,8 +77,6 @@ export class LineChartComponent implements OnInit {
     let startTime: string = this.startDate.toISOString();
     let endTime: string = this.endDate.toISOString();
 
-    console.log(`start time: ${startTime}, end time: ${endTime}`);
-
     return this.getDataBetweenDates(startTime, endTime);
   }
 
@@ -92,24 +91,29 @@ export class LineChartComponent implements OnInit {
         case 'lastHour':
           this.startDate = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000);
           this.endDate = new Date(currentTime.getTime());
+          this.updateInterval = 1000 * 5;
           break;
         case 'thisDay':
           this.startDate.setHours(2, 0, 0, 0);
           this.startDate.setUTCDate(currentTime.getUTCDate());
+          this.updateInterval = 1000 * 60;
           break;
         case 'thisWeek':
           this.startDate.setHours(2, 0, 0, 0)
           this.startDate.setUTCDate(currentTime.getUTCDate() - 7);
+          this.updateInterval = 1000 * 60 * 5;
           break;
         case 'thisMonth':
           this.startDate.setHours(2, 0, 0, 0);
           this.startDate.setUTCDate(currentTime.getUTCDate());
           this.startDate.setUTCMonth(currentTime.getUTCMonth() - 1);
+          this.updateInterval = 1000 * 60 * 10;
           break;
         case 'thisYear':
           this.startDate.setHours(2, 0, 0, 0);
           this.startDate.setUTCDate(currentTime.getUTCDate());
           this.startDate.setUTCFullYear(currentTime.getUTCFullYear() - 1);
+          this.updateInterval = 1000 * 60 * 60;
         break;
         // ... other timeframes
 
@@ -163,7 +167,7 @@ export class LineChartComponent implements OnInit {
 
   private updateData() {
     // Start an interval that emits every 5 seconds
-    interval(5000).pipe(
+    interval(this.updateInterval).pipe(
       // For each emission from the interval, switch to fetching the data
       switchMap(() => this.fetchDataForTimeframe())
     ).subscribe(allData => {

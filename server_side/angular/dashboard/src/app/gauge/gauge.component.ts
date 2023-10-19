@@ -1,4 +1,5 @@
-import { Component, OnInit, ElementRef, NgZone, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, ElementRef, NgZone, OnDestroy, Input} from '@angular/core';
+import { timer, Subscription } from 'rxjs';
 import * as d3 from 'd3';
 import { DataService } from '../data.service';
 
@@ -18,7 +19,9 @@ export class GaugeComponent implements OnInit, OnDestroy {
   private emptyArc: any;
   private transitionDuration: number = 1000;  // in milliseconds
   private updateInterval: number = 1000;  // in milliseconds
-  private updateTimer: any;
+  private updateSubscription: any;
+  private lastValue: number = 0;
+  private gettingData: boolean = false;
   @Input() site!: string;
   @Input() category!: string;
   @Input() unit!: string;
@@ -264,33 +267,40 @@ export class GaugeComponent implements OnInit, OnDestroy {
   }
 
   private updateGauge(value: number) {
+    if(this.lastValue == value) return;
+    this.lastValue = value;
     this.updateValueArc(value);
     this.updateNeedle(value);
     this.updateValueText(value);
   }
 
   fetchDataAndUpdateGauge() {
+    if(this.gettingData) return;
+    this.gettingData = true;
     this.dataService.getLatestData(this.site, this.category).subscribe((data: any) => {
       // Assuming the response has a property 'value' which contains the data for the gauge
       const gaugeValue = data.Response[1];
-      console.log(gaugeValue)
+      console.log("GaugeComponent fetchDataAndUpdateGauge", gaugeValue);
       this.updateGauge(gaugeValue);
+      this.gettingData = false;
     });
   }
 
   ngOnInit() {
-    this.ngZone.runOutsideAngular(() => {
-      this.createGauge(0);
+    console.log("GaugeComponent ngOnInit");
+    this.createGauge(0);
 
-      this.updateTimer = setInterval(() => {
-          this.fetchDataAndUpdateGauge();
-      }, this.updateInterval);  // Fetch new data every second
-    });
+    this.updateSubscription = timer(0, this.updateInterval).pipe(
+
+    ).subscribe(result => 
+
+      this.fetchDataAndUpdateGauge()
+
+    );
   }
 
   ngOnDestroy() {
-    if (this.svg) {
-      this.svg.remove();
-    }
+    this.updateSubscription.unsubscribe();
+    this.lastValue = 0;
   }
 }

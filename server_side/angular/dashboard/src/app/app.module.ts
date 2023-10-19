@@ -18,11 +18,13 @@ import { LineChartComponent } from './line-chart/line-chart.component';
 import { GaugeComponent } from './gauge/gauge.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { TemperaturePageComponent } from './temperature-page/temperature-page.component';
+import { PowerPageComponent } from './power-page/power-page.component';
 
 @NgModule({
   declarations: [
     AppComponent
-  , LineChartComponent, GaugeComponent, DashboardComponent],
+  , LineChartComponent, GaugeComponent, DashboardComponent, TemperaturePageComponent, PowerPageComponent],
   imports: [
     CommonModule,
     BrowserModule,
