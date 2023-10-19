@@ -29,7 +29,7 @@
         <button mat-icon-button (click)="sidenav.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
-        <span class="dashboard-title">Power Dashboard</span>
+        <span class="dashboard-title">Energy Dashboard</span>
         <span class="spacer"></span> <!-- Spacer after the title -->
       </mat-toolbar>
   
@@ -37,16 +37,16 @@
       <div class="dashboard-content">
 
         <!-- Title centered above the gauges -->
-        <h2 class="section-title">Power Gauges</h2>
+        <h2 class="section-title">Energy Gauges</h2>
         <!-- Make this a flex container -->
         <div class="gauge-wrapper">
 
             <div class="gauge-container">
                 <app-gauge
                 [site]="'koltrastvägen'"
-                [category]="'grid_power_kW'"
-                [unit]="'kW'"
-                [title]="'Grid Power'"
+                [category]="'grid_import_day_energy_kWh'"
+                [unit]="'kWh'"
+                [title]="'Grid Import Day'"
                 [range_min]="-5"
                 [range_max]="10"
                 ></app-gauge>
@@ -54,9 +54,9 @@
             <div class="gauge-container">
                 <app-gauge
                 [site]="'koltrastvägen'"
-                [category]="'home_power_kW'"
-                [unit]="'kW'"
-                [title]="'Home Power'"
+                [category]="'pv_solar_day_energy_kWh'"
+                [unit]="'kWh'"
+                [title]="'PV Energy Day'"
                 [range_min]="-5"
                 [range_max]="10"
                 ></app-gauge>
@@ -64,9 +64,9 @@
             <div class="gauge-container">
                 <app-gauge
                 [site]="'koltrastvägen'"
-                [category]="'pv_solar_power_kW'"
-                [unit]="'kW'"
-                [title]="'PV Power'"
+                [category]="'home_day_energy_kWh'"
+                [unit]="'kWh'"
+                [title]="'Home Energy Day'"
                 [range_min]="-5"
                 [range_max]="10"
                 ></app-gauge>
@@ -78,24 +78,24 @@
         <div class="linechart-wrapper">
             <div class="linechart-container">
                 <app-line-chart 
-                    [chartTitle]="'Power Last Hour'"
-                    [labels]="{ yAxis: 'kW', xAxis: 'Time'}"
+                    [chartTitle]="'Energy Last Hour'"
+                    [labels]="{ yAxis: 'kWh', xAxis: 'Time'}"
                     [dataSources]="[
-                        { site: 'koltrastvägen', category: 'grid_power_kW', label: 'Grid' },
-                        { site: 'koltrastvägen', category: 'home_power_kW', label: 'Home' },
-                        { site: 'koltrastvägen', category: 'pv_solar_power_kW', label: 'PV' },
+                        { site: 'koltrastvägen', category: 'grid_import_day_energy_kWh', label: 'Grid Import' },
+                        { site: 'koltrastvägen', category: 'pv_solar_day_energy_kWh', label: 'PV Energy' },
+                        { site: 'koltrastvägen', category: 'home_day_energy_kWh', label: 'Home Energy' },
                     ]" 
                     [timeframe]="'lastHour'">
                 </app-line-chart>
             </div>
             <div class="linechart-container">
                 <app-line-chart 
-                    [chartTitle]="'Power This Day'"
+                    [chartTitle]="'Energy This Day'"
                     [labels]="{ yAxis: 'kW', xAxis: 'Time'}"
                     [dataSources]="[
-                        { site: 'koltrastvägen', category: 'grid_power_kW', label: 'Grid' },
-                        { site: 'koltrastvägen', category: 'home_power_kW', label: 'Home' },
-                        { site: 'koltrastvägen', category: 'pv_solar_power_kW', label: 'PV' },
+                    { site: 'koltrastvägen', category: 'grid_import_day_energy_kWh', label: 'Grid Import' },
+                    { site: 'koltrastvägen', category: 'pv_solar_day_energy_kWh', label: 'PV Energy' },
+                    { site: 'koltrastvägen', category: 'home_day_energy_kWh', label: 'Home Energy' },
                     ]" 
                     [timeframe]="'thisDay'">
                 </app-line-chart>
@@ -103,12 +103,12 @@
 
             <div class="linechart-container">
                 <app-line-chart 
-                    [chartTitle]="'Power Last Week'"
+                    [chartTitle]="'Energy Last Week'"
                     [labels]="{ yAxis: 'kW', xAxis: 'Time'}"
                     [dataSources]="[
-                        { site: 'koltrastvägen', category: 'grid_power_kW', label: 'Grid' },
-                        { site: 'koltrastvägen', category: 'home_power_kW', label: 'Home' },
-                        { site: 'koltrastvägen', category: 'pv_solar_power_kW', label: 'PV' },
+                    { site: 'koltrastvägen', category: 'grid_import_day_energy_kWh', label: 'Grid Import' },
+                    { site: 'koltrastvägen', category: 'pv_solar_day_energy_kWh', label: 'PV Energy' },
+                    { site: 'koltrastvägen', category: 'home_day_energy_kWh', label: 'Home Energy' },
                     ]" 
                     [timeframe]="'thisWeek'">
                 </app-line-chart>
@@ -116,12 +116,12 @@
 
             <div class="linechart-container">
                 <app-line-chart 
-                    [chartTitle]="'Power This Month'"
+                    [chartTitle]="'Energy This Month'"
                     [labels]="{ yAxis: 'kW', xAxis: 'Time'}"
                     [dataSources]="[
-                        { site: 'koltrastvägen', category: 'grid_power_kW', label: 'Grid' },
-                        { site: 'koltrastvägen', category: 'home_power_kW', label: 'Home' },
-                        { site: 'koltrastvägen', category: 'pv_solar_power_kW', label: 'PV' },
+                    { site: 'koltrastvägen', category: 'grid_import_day_energy_kWh', label: 'Grid Import' },
+                    { site: 'koltrastvägen', category: 'pv_solar_day_energy_kWh', label: 'PV Energy' },
+                    { site: 'koltrastvägen', category: 'home_day_energy_kWh', label: 'Home Energy' },
                     ]" 
                     [timeframe]="'thisMonth'"
                     [smoothingFactor]="5">
@@ -130,12 +130,12 @@
 
             <div class="linechart-container">
                 <app-line-chart 
-                    [chartTitle]="'Power Last Year'"
+                    [chartTitle]="'Energy Last Year'"
                     [labels]="{ yAxis: 'kW', xAxis: 'Time'}"
                     [dataSources]="[
-                        { site: 'koltrastvägen', category: 'grid_power_kW', label: 'Grid' },
-                        { site: 'koltrastvägen', category: 'home_power_kW', label: 'Home' },
-                        { site: 'koltrastvägen', category: 'pv_solar_power_kW', label: 'PV' },
+                    { site: 'koltrastvägen', category: 'grid_import_day_energy_kWh', label: 'Grid Import' },
+                    { site: 'koltrastvägen', category: 'pv_solar_day_energy_kWh', label: 'PV Energy' },
+                    { site: 'koltrastvägen', category: 'home_day_energy_kWh', label: 'Home Energy' },
                     ]" 
                     [timeframe]="'thisYear'"
                     [smoothingFactor]="20">

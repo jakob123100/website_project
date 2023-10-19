@@ -7,14 +7,18 @@
               <mat-icon matListIcon>cloud</mat-icon>
               <span> Temperature Dashboard</span>
             </mat-list-item>
-            <mat-list-item routerLink="/dashboard/power" (click)="sidenav.toggle()">
-                <mat-icon matListIcon>power icon</mat-icon>
-                <span> Power Dashboard</span>
-              </mat-list-item>
-          <mat-list-item (click)="sidenav.toggle()">
+        <mat-list-item routerLink="/dashboard/power" (click)="sidenav.toggle()">
+            <mat-icon matListIcon>power icon</mat-icon>
+            <span> Power Dashboard</span>
+            </mat-list-item>
+        <mat-list-item routerLink="/dashboard/energy" (click)="sidenav.toggle()">
+            <mat-icon matListIcon>battery_charging_full</mat-icon>
+            <span> Energy Dashboard</span>
+        </mat-list-item>
+        <mat-list-item (click)="sidenav.toggle()">
             <mat-icon matListIcon>settings</mat-icon>
             <span> Settings</span>
-          </mat-list-item>
+        </mat-list-item>
           <!-- Add more navigation items here -->
         </mat-nav-list>
       </mat-sidenav>
@@ -25,7 +29,7 @@
         <button mat-icon-button (click)="sidenav.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
-        <span class="dashboard-title">Dashboard</span>
+        <span class="dashboard-title">Temperature Dashboard</span>
         <span class="spacer"></span> <!-- Spacer after the title -->
       </mat-toolbar>
   

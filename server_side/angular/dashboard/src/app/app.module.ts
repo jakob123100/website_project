@@ -20,11 +20,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { TemperaturePageComponent } from './temperature-page/temperature-page.component';
 import { PowerPageComponent } from './power-page/power-page.component';
+import { EnergyPageComponent } from './energy-page/energy-page.component';
 
 @NgModule({
   declarations: [
     AppComponent
-  , LineChartComponent, GaugeComponent, DashboardComponent, TemperaturePageComponent, PowerPageComponent],
+  , LineChartComponent, GaugeComponent, DashboardComponent, TemperaturePageComponent, PowerPageComponent, EnergyPageComponent],
   imports: [
     CommonModule,
     BrowserModule,

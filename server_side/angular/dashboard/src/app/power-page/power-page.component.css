@@ -67,9 +67,10 @@
     text-align: center;      /* Center the title */
     margin-top: 20px;        /* Space at the top */
     margin-bottom: 30px;     /* Space between the title and the gauges */
-    font-size: xx-large;         /* Adjust font size as needed */
+    font-size: 40px;         /* Adjust font size as needed */
     color: #eae6e6;             /* Adjust color as needed */
     font-weight: 500;        /* Semi-bold font weight */
+    font-family: monospace;
 }
 
 .linechart-wrapper {
