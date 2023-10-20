@@ -262,8 +262,40 @@ export class GaugeComponent implements OnInit, OnDestroy {
   }
 
   private updateValueText(value: number) {
-    this.svg.select(".gaugeValueText")
-        .text(value.toString() + this.unit);
+    /*this.svg.select(".gaugeValueText")
+        .text(value.toString() + this.unit);*/
+    
+    const textElement = this.svg.select(".gaugeValueText");
+
+    // Get the current value of the text element
+    const currentValue = +textElement.text().replace(this.unit, '');
+    const unit = this.unit;
+
+    // Determine the color based on the value change
+    const color = value > currentValue ? "green" : "red";
+
+    const transitionDuration = this.transitionDuration;
+
+    // Create a custom tween function
+    textElement.transition()
+      .duration(transitionDuration/4) // Duration of the transition in milliseconds
+      .attr("fill", color)
+      .duration(transitionDuration) // Duration of the transition in milliseconds
+      .tween('text', function() {
+            // Define the interpolator function
+            const i = d3.interpolateNumber(currentValue, value);
+
+            return function(t:any) {
+                // Update the text with the interpolated value
+                textElement.text(i(t).toFixed(2) + unit);
+            };
+        })
+        .on("end", function() {
+            // Transition to white color after the main transition completes
+            textElement.transition()
+                .duration(transitionDuration/2) // You can adjust this duration as needed
+                .attr("fill", "white");
+        });
   }
 
   private updateGauge(value: number) {
